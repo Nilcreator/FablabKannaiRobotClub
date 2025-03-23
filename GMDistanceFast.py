@@ -55,7 +55,7 @@ def print_board_status():
 # Gemini Setup
 # API Authentication
 # Insert your API key here, else comment it out to use Google application default credentials (ADC)
-GOOGLE_API_KEY = "AIzaSyBeX7FLKmrzj0nGgYhkUhQSqj91o8kJ3Xg"
+GOOGLE_API_KEY = "Input your Google API Key here!"
 if len(GOOGLE_API_KEY) < 5 and "GOOGLE_APPLICATION_CREDENTIALS" not in os.environ:
     print(
         f"Please add your Google Gemini API key in the program, set up Application Default Credentials, or set it as environment variable. \n "

@@ -48,7 +48,7 @@ else:
     #genai.configure()
 
 # model of Google Gemini API
-model = genai.GenerativeModel('gemini-1.5-pro',
+model = genai.GenerativeModel('gemini-2.0-flash-lite',
     generation_config=genai.GenerationConfig(
         candidate_count=1,
         top_p = 0.95,

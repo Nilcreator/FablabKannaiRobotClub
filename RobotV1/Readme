@@ -77,7 +77,7 @@ Run these commands for first time only. If RPi.GPIO has already been properly in
     If you have to unexport, use this command instead:
     sudo gpio unexport 18
 
-Step 5: Write the Python Code (Servo_PWM.py)
+Step 5: Write the Python Code (Servo_Digital.py)
 Explanation:
 RPi.GPIO Library: We're using the RPi.GPIO library directly for GPIO control.
 Software PWM: The code now initializes PWM objects using GPIO.PWM().
@@ -85,10 +85,10 @@ pwm_frequency, min_duty_cycle, max_duty_cycle: These variables define the parame
 set_angle(): A function to set the servo angle by calculating the appropriate duty cycle and using pwm.ChangeDutyCycle().
 
 Step 6: Run the Code
-    Save the code as servo_robot.py. Run it:
-    python3 servo_robot.py
+    Save the code as Servo_Digital.py. Run it:
+    python3 Servo_Digital.py
     or with sudo:
-    sudo python3 servo_robot.py
+    sudo python3 Servo_Digital.py
 
 Now your four servos should move accordingly.
     

@@ -1,1 +1,94 @@
 this is a first prototype for the Gemini Robot v1
+
+Prerequisites:
+- Raspberry Pi Zero (or Zero W)
+- DFRobot IO Expansion HAT for Raspberry Pi Zero
+- 4 x TowerPro SG90 Servos
+- Jumper Wires (Female-to-Male)
+- MicroSD Card (at least 8GB)
+- USB OTG Adapter (for connecting keyboard/mouse during initial setup)
+- External 5V Power Supply for Servos (3A battery x4)
+- Access to a Computer with an SD Card Reader
+- Ultra Sonic Sensor
+
+Step 1: Prepare the Raspberry Pi Zero
+1. Download Raspberry Pi OS Lite: Download the Lite version of Raspberry Pi OS (Bullseye or Bookworm, 32-bit or 64-bit) from the official Raspberry Pi website: https://www.raspberrypi.com/software/operating-systems/ (The Lite version is smaller and more efficient for headless operation).
+2. Enable SSH: Before writing the OS image to the SD card, create an empty file named ssh (without any extension) in the root directory of the SD card. This enables SSH access.
+3. Configure Wi-Fi (Optional): If you're using a Raspberry Pi Zero W (with Wi-Fi), create a file named wpa_supplicant.conf in the root directory of the SD card with the following content:
+    ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+    update_config=1
+    country=US
+
+    network={
+        ssid="YOUR_WIFI_SSID"
+        psk="YOUR_WIFI_PASSWORD"
+    }
+Replace YOUR_WIFI_SSID and YOUR_WIFI_PASSWORD with your Wi-Fi network's credentials.
+4. Write the OS Image to the SD Card: Use a tool like Raspberry Pi Imager or Etcher to write the Raspberry Pi OS image to the microSD card.
+5. Boot the Raspberry Pi Zero: Insert the microSD card into the Raspberry Pi Zero, connect the external power supply (for the Pi Zero itself), and power it on.
+6. Find the IP Address: Use a network scanning tool (like nmap) on your computer to find the IP address of the Raspberry Pi Zero. Alternatively, you can connect a monitor, keyboard, and mouse via the USB OTG adapter and log in to find the IP address using the ifconfig command.
+7. Connect via SSH: Open a terminal on your computer and connect to the Raspberry Pi Zero using SSH:
+    ssh pi@<your_pi_zero_ip_address>
+
+Step 2: Hardware Setup
+1. Solder Header Pins (If Required): If your DFRobot IO Expansion HAT requires soldering, carefully solder the header pins to the board. Follow proper soldering techniques.
+2. Mount the DFRobot IO Expansion HAT: Carefully align the pins of the DFRobot IO Expansion HAT with the GPIO pins on your Raspberry Pi Zero and gently press it into place.
+3. Power Supply Verification.
+    It is extremely important not to try powering the servos from the Raspberry Pi Zero. Doing so can damage the Raspberry Pi.
+    Measure voltage of the external power supply to verify it is working. Connect power to the external power supply. Use a multimeter and measure output voltage, it should read around 5V. 
+    Connect the ground of Raspberry Pi Zero to the ground of the external power supply.
+4. Connect the Servos: Connect the three wires from each SG90 servo to the appropriate pins on the HAT.
+    Brown wire (GND): Connect to a GND (Ground) pin on the DFRobot HAT.
+    Red wire (VCC): Connect to the 5V pin of the external power supply.
+    Orange wire (Signal): Connect to the specified digital pins on the HAT. Assume you connect your servos to the following digital pins on the DFRobot IO Expansion HAT:
+        Servo 1: Digital Pin 16 (GPIO16) / PWM 1
+        Servo 2: Digital Pin 17 (GPIO17) / PWM 2
+        Servo 3: Digital Pin 18 (GPIO18) / PWM 3
+        Servo 4: Digital Pin 19 (GPIO19) / PWM 4
+    Ensure the ground of the external 5V power supply is connected to the Raspberry Pi Zero's ground.
+
+Step 3: Software Setup (via SSH)
+Connect to your Pi Zero via SSH and then continue with software setup
+1. Update and Upgrade:
+    sudo apt update
+    sudo apt upgrade -y
+2. Enable I2C (If Required): Some DFRobot IO Expansion HATs communicate via I2C. If yours does, enable I2C using raspi-config:
+    sudo raspi-config
+    Go to "Interface Options. > Select "I2C" and enable it. > Reboot the Raspberry Pi.
+3. Install Python and pip:
+    sudo apt install python3 python3-pip
+4. Install RPi.GPIO:
+    pip3 install RPi.GPIO
+
+Step 4: Configure GPIO
+Run these commands for first time only. If RPi.GPIO has already been properly installed in the past, then skip these steps.
+1. You need to add the Raspberry Pi user account to the gpio group, so they can write to the GPIO pins. To do this, run the following command:
+    sudo usermod -a -G gpio $USER
+    You’ll also need to add the user to the kmem group:
+    sudo usermod -a -G kmem $USER
+2. After the first set of commands, edit the /boot/config.txt file
+    sudo nano /boot/config.txt
+    Add the following line to the very end of the file and save it:
+    gpio_mem=2
+    Reboot your Pi.
+3. export GPIO You may get an error, for example GPIO not exported if you are using external GPIO. Then you have to follow these steps to export it.
+    To export a GPIO pin for use, you can use the gpio command. For example, to export GPIO pin 18, use the following command:
+    sudo gpio export 18 out
+    If you have to unexport, use this command instead:
+    sudo gpio unexport 18
+
+Step 5: Write the Python Code (Servo_PWM.py)
+Explanation:
+RPi.GPIO Library: We're using the RPi.GPIO library directly for GPIO control.
+Software PWM: The code now initializes PWM objects using GPIO.PWM().
+pwm_frequency, min_duty_cycle, max_duty_cycle: These variables define the parameters for the software PWM signal.
+set_angle(): A function to set the servo angle by calculating the appropriate duty cycle and using pwm.ChangeDutyCycle().
+
+Step 6: Run the Code
+    Save the code as servo_robot.py. Run it:
+    python3 servo_robot.py
+    or with sudo:
+    sudo python3 servo_robot.py
+
+Now your four servos should move accordingly.
+    

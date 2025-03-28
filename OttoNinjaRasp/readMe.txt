@@ -9,6 +9,13 @@ Hardware setup:
 6. INMP441 12S Mic module
 7. Button module
 
-Gemini API: gemini-2.0-flash-lite
+Servo Setup:
+RL Servo0 : 170(內)~100~10(外) degrees 
+LL Servo1: 20(內)~90~180(外) degrees 
+RF Servo2: forward < 90 < backward 
+LF: Servo3: forward > 90 > backward
+
+Gemini API: 
+gemini-2.0-flash-lite
 
 

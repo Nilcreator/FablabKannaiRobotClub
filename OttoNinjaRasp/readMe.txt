@@ -10,8 +10,8 @@ Hardware setup:
 7. Button module
 
 Servo Setup:
-RL Servo0 : 170(內)~100~10(外) degrees 
-LL Servo1: 20(內)~90~180(外) degrees 
+RL Servo0 : 170(in)~100~10(out) degrees 
+LL Servo1: 20(in)~90~180(out) degrees 
 RF Servo2: forward < 90 < backward 
 LF: Servo3: forward > 90 > backward
 

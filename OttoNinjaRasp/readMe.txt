@@ -9,3 +9,6 @@ Hardware setup:
 6. INMP441 12S Mic module
 7. Button module
 
+Gemini API: gemini-2.0-flash-lite
+
+

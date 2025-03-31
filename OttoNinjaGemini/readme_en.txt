@@ -1,4 +1,4 @@
-# Ninja Gemini Robot Control System
+# Ninja Gemini Robot
 
 ## 1. Overview
 

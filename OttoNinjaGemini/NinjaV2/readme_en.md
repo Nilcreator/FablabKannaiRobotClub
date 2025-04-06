@@ -80,6 +80,3 @@
 *   **Debugging:** Check the output in the Flask terminal window on the Raspberry Pi for detailed logs and error messages. Use your browser's developer console (F12) to check for JavaScript errors or network issues related to the Web Speech API or `fetch` calls.
 *   **Power:** Ensure your power supply can handle the Pi, HAT, and **all four servos moving simultaneously**, especially during complex actions or startup. Insufficient power can cause instability or reboots.
 
-## License
-
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file (if you create one) for details.

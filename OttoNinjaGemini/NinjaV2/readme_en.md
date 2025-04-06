@@ -1,3 +1,58 @@
+# Ninja Robot - Raspberry Pi Voice/Text Control
+
+This project implements a small robot controlled by a Raspberry Pi Zero W, using the DFRobot Raspberry Pi IO Expansion HAT. It features:
+
+*   **Natural Language Control:** Uses Google Gemini (via API) to interpret text or voice commands.
+*   **Web Interface:** A simple Flask-based web UI accessible over your local Wi-Fi network.
+*   **Voice & Text Input:** Control the robot using either typed commands or your browser's microphone (using the Web Speech API).
+*   **Movement:** Basic walking, running (tire mode), turning, and specific servo control via 4 servos.
+*   **Sound Feedback:** A buzzer provides audio cues for different actions and states.
+*   **Obstacle Avoidance:** An ultrasonic sensor detects nearby objects during forward movement and stops the robot.
+
+## Features
+
+*   Control robot movements (walk, run, turn, etc.) using natural language.
+*   Control robot sounds (hello, danger, happy, etc.).
+*   Set individual servo angles.
+*   Web-based user interface accessible from any device on the local network.
+*   Supports both text input and voice input (via browser's Web Speech API).
+*   Automatic obstacle detection and stopping during forward walk/run.
+*   Modular code structure (`core logic`, `web interface`, `hardware modules`).
+
+## Hardware Requirements
+
+1.  **Raspberry Pi:** Raspberry Pi Zero W recommended (due to built-in Wi-Fi), but other models with Wi-Fi/network access should work.
+2.  **SD Card:** With Raspberry Pi OS installed and configured (including Wi-Fi).
+3.  **Power Supply:** Adequate power supply for the Raspberry Pi and connected hardware.
+4.  **DFRobot Raspberry Pi IO Expansion HAT:** (Or a similar board providing I2C PWM and GPIO access). Product Link: [https://www.dfrobot.com/product-1 expansion board.html](https://www.dfrobot.com/product-1 expansion board.html) (Note: Actual link may vary, please verify).
+5.  **Servos:** 4 x Standard 90g Servos (e.g., MG90S or similar). Connected to PWM channels 0-3 on the HAT.
+6.  **Ultrasonic Sensor:** 1 x HC-SR04 Ultrasonic Distance Sensor. Connected to GPIO pins on the HAT.
+7.  **Active Buzzer:** 1 x Active Buzzer Module. Connected to a GPIO pin on the HAT.
+8.  **Robot Chassis/Frame:** To mount the Pi, HAT, servos, sensor, and buzzer.
+9.  **Jumper Wires:** For connecting the sensor and buzzer to the HAT.
+
+## Software Requirements & Installation
+
+1.  **Raspberry Pi OS:** Ensure your Pi is running an up-to-date version of Raspberry Pi OS (Legacy or newer).
+2.  **Python 3:** Should be pre-installed on Raspberry Pi OS.
+3.  **pip:** Python package installer.
+4.  **Required Python Libraries:** Install using pip:
+    ```bash
+    pip install Flask google-generativeai RPi.GPIO DFRobot_RaspberryPi_Expansion_Board
+    ```
+    *(Note: `RPi.GPIO` might be pre-installed. `DFRobot_...` library assumes you've downloaded or installed it according to the HAT's documentation).*
+5.  **Google Gemini API Key:** You need an API key from Google AI Studio ([https://aistudio.google.com/app/apikey](https://aistudio.google.com/app/apikey)). The free tier is usually sufficient for this project.
+
+## File Structure Overview
+
+- ninja_core.py # Core logic: initialization, cleanup, Gemini calls, action execution
+- web_interface.py # Flask web server application
+- Ninja_Movements_v1.py # Servo control functions
+- Ninja_Buzzer.py # Buzzer sound functions and definitions
+- Ninja_Distance.py # Ultrasonic sensor functions
+- DFRobot_RaspberryPi_Expansion_Board.py # DFRobot HAT library file (or place in subdirectory as needed)
+- templates/index.html # HTML template for the web interface
+- README.md # This file
 
 ## Configuration
 

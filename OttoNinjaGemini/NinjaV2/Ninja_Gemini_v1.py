@@ -26,7 +26,7 @@ import google.generativeai as genai  # Import Google Gemini library
 # API Authentication
 # Insert your API key here. If left empty, it will try Application Default Credentials (ADC).
 # Get API Key: https://aistudio.google.com/app/apikey
-GOOGLE_API_KEY = "AIzaSyBeX7FLKmrzj0nGgYhkUhQSqj91o8kJ3Xg"  # <----------- input your API key
+GOOGLE_API_KEY = "Input your Gemini API key here!"  # <----------- input your API key
 
 # Configure the Gemini client
 try:

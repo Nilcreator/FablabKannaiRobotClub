@@ -105,6 +105,7 @@ def initialize_hardware():
         distance.setup_sensor() # Sets up GPIO BCM mode and pins
 
         print("Hardware initialization complete.")
+        play_robot_sound('hello')
         movements.reset_servos() # Start in a known position
         time.sleep(1)
 
@@ -547,6 +548,7 @@ if __name__ == "__main__":
                  break
 
     except KeyboardInterrupt:
+        play_robot_sound('sleepy')
         print("\nCtrl+C detected. Initiating shutdown...")
 
     except Exception as e:

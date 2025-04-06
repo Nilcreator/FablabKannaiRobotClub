@@ -45,15 +45,14 @@
 
 ## ファイル構造の概要
 
-├── ninja_core.py # コアロジック: 初期化、クリーンアップ、Gemini呼び出し、アクション実行
-├── web_interface.py # Flaskウェブサーバーアプリケーション
-├── Ninja_Movements_v1.py # サーボ制御関数
-├── Ninja_Buzzer.py # ブザーサウンド関数と定義
-├── Ninja_Distance.py # 超音波センサー関数
-├── DFRobot_RaspberryPi_Expansion_Board.py # DFRobot HATライブラリファイル（または必要に応じてサブディレクトリに配置）
-├── templates/
-│ └── index.html # ウェブインターフェース用HTMLテンプレート
-└── README.md # このファイル (日本語版)
+- ninja_core.py # コアロジック: 初期化、クリーンアップ、Gemini呼び出し、アクション実行
+- web_interface.py # Flaskウェブサーバーアプリケーション
+- Ninja_Movements_v1.py # サーボ制御関数
+- Ninja_Buzzer.py # ブザーサウンド関数と定義
+- Ninja_Distance.py # 超音波センサー関数
+- DFRobot_RaspberryPi_Expansion_Board.py # DFRobot HATライブラリファイル（または必要に応じてサブディレクトリに配置）
+- templates/index.html # ウェブインターフェース用HTMLテンプレート
+- README.md # このファイル (日本語版)
 
 
 ## 設定

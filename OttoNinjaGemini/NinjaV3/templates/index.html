@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ninja Robot Control</title>
+    <style>
+        body { font-family: sans-serif; line-height: 1.4; margin: 20px; background-color: #f4f4f4; }
+        .container { max-width: 800px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        h1 { text-align: center; color: #333; }
+        .controls { text-align: center; margin-bottom: 20px; }
+        button { padding: 10px 20px; margin: 5px; font-size: 1em; cursor: pointer; border: none; border-radius: 5px; }
+        #startButton { background-color: #5cb85c; color: white; }
+        #stopButton { background-color: #d9534f; color: white; }
+        button:disabled { background-color: #cccccc; cursor: not-allowed; }
+        #statusArea { margin-top: 15px; font-weight: bold; text-align: center; }
+        #logDisplay {
+            background-color: #222;
+            color: #0f0; /* Green text like terminal */
+            padding: 15px;
+            border-radius: 5px;
+            height: 400px; /* Fixed height */
+            overflow-y: scroll; /* Enable vertical scrolling */
+            white-space: pre-wrap; /* Wrap long lines */
+            word-wrap: break-word;
+            font-family: monospace;
+            font-size: 0.9em;
+            margin-top: 20px;
+            border: 1px solid #444;
+        }
+        .log-user { color: #00ffff; } /* Cyan for User */
+        .log-assistant { color: #ffff00; } /* Yellow for Assistant */
+        .log-system { color: #aaaaaa; } /* Grey for System */
+        .log-error { color: #ff4444; } /* Red for Errors */
+        .loader {
+             border: 4px solid #f3f3f3; border-top: 4px solid #3498db;
+             border-radius: 50%; width: 20px; height: 20px;
+             animation: spin 1s linear infinite;
+             display: inline-block; vertical-align: middle; margin-left: 10px;
+        }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .hidden { display: none; }
+    </style>
+    <!-- Include jQuery for easier AJAX -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h1>Ninja Robot Interface</h1>
+
+        <div class="controls">
+            <button id="startButton">Start Voice Control</button>
+            <button id="stopButton">Stop Voice Control</button>
+            <span id="loadingSpinner" class="loader hidden"></span>
+        </div>
+
+        <div id="statusArea">Status: Unknown</div>
+
+        <div id="logDisplay">
+            Waiting for status updates...
+        </div>
+    </div>
+
+    <script>
+        let isRunning = false; // Track running state
+        let lastLogContent = ""; // Track last content to detect user input
+
+        // Function to update status display and button states
+        function updateStatus(running, message = null) {
+            isRunning = running;
+            const statusText = running ? 'Running' : 'Stopped';
+            let statusMsg = `Status: ${statusText}`;
+            if (message) {
+                statusMsg += ` - ${message}`;
+            }
+            $('#statusArea').text(statusMsg);
+            $('#startButton').prop('disabled', running);
+            $('#stopButton').prop('disabled', !running);
+            $('#loadingSpinner').addClass('hidden'); // Hide spinner once status known
+        }
+
+        // Function to fetch status and logs periodically
+        function fetchStatus() {
+            $.getJSON('/status')
+                .done(function(data) {
+                    updateStatus(data.running); // Update running state first
+
+                    const logDiv = $('#logDisplay');
+                    const newLogContent = data.log_content || "";
+
+                    // --- Logic to clear on new user input (Simplified: Just show last N lines) ---
+                    // This replaces complex detection with simply showing the latest chunk.
+                    // More robust clearing would require better markers in the log or WebSockets.
+                    if (newLogContent !== lastLogContent) {
+                        logDiv.html(''); // Clear previous content
+                         // Add syntax highlighting (basic)
+                         const lines = newLogContent.split('\n');
+                         lines.forEach(line => {
+                             let cssClass = '';
+                             if (line.includes('] User:')) cssClass = 'log-user';
+                             else if (line.includes('] Assistant:')) cssClass = 'log-assistant';
+                             else if (line.includes('] System:')) cssClass = 'log-system';
+                             else if (line.toLowerCase().includes('error') || line.toLowerCase().includes('warning')) cssClass = 'log-error';
+
+                             // Create a new element for each line to apply class
+                             const lineElement = $('<div>').text(line).addClass(cssClass);
+                             logDiv.append(lineElement);
+                         });
+
+                        // Scroll to the bottom
+                        logDiv.scrollTop(logDiv[0].scrollHeight);
+                        lastLogContent = newLogContent; // Update last known content
+                    }
+                     // --- End Simplified Display Logic ---
+
+                })
+                .fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error("Error fetching status:", textStatus, errorThrown);
+                    $('#statusArea').text('Status: Error fetching status');
+                     $('#loadingSpinner').addClass('hidden');
+                })
+                .always(function() {
+                    // Schedule next fetch only if no request is pending
+                     setTimeout(fetchStatus, 1500); // Poll every 1.5 seconds
+                });
+        }
+
+        // --- Button Click Handlers ---
+        $('#startButton').on('click', function() {
+            console.log("Start button clicked");
+            $('#loadingSpinner').removeClass('hidden');
+            $('#statusArea').text('Status: Starting...');
+            $(this).prop('disabled', true); // Disable button immediately
+             $('#stopButton').prop('disabled', true); // Disable stop too while starting
+
+            $.post('/start_voice')
+                .done(function(data) {
+                    console.log("Start request successful:", data.message);
+                    // Status will be updated by the next fetchStatus poll
+                    // updateStatus(true, data.message); // Optional immediate update
+                })
+                .fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error("Error starting voice control:", textStatus, errorThrown);
+                    const errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.message : 'Request failed';
+                    updateStatus(false, `Error starting: ${errorMsg}`); // Update status back to stopped on failure
+                })
+                 .always(function() {
+                      // Let fetchStatus re-enable buttons based on actual state
+                 });
+        });
+
+        $('#stopButton').on('click', function() {
+            console.log("Stop button clicked");
+             $('#loadingSpinner').removeClass('hidden');
+             $('#statusArea').text('Status: Stopping...');
+            $(this).prop('disabled', true); // Disable button immediately
+            $('#startButton').prop('disabled', true); // Disable start too while stopping
+
+            $.post('/stop_voice')
+                .done(function(data) {
+                    console.log("Stop request successful:", data.message);
+                     // Status will be updated by the next fetchStatus poll
+                     // updateStatus(false, data.message); // Optional immediate update
+                })
+                .fail(function(jqXHR, textStatus, errorThrown) {
+                    console.error("Error stopping voice control:", textStatus, errorThrown);
+                    const errorMsg = jqXHR.responseJSON ? jqXHR.responseJSON.message : 'Request failed';
+                    // Don't assume it stopped on failure, let fetchStatus decide button state
+                    $('#statusArea').text(`Status: Error stopping: ${errorMsg}`);
+                    $('#loadingSpinner').addClass('hidden');
+                    $('#stopButton').prop('disabled', false); // Re-enable stop if failed
+                })
+                 .always(function() {
+                       // Let fetchStatus re-enable buttons based on actual state
+                 });;
+        });
+
+        // --- Initial Status Fetch ---
+        $(document).ready(function() {
+            console.log("Document ready, starting initial status fetch.");
+             $('#loadingSpinner').removeClass('hidden'); // Show spinner initially
+             fetchStatus(); // Start the polling loop
+        });
+
+    </script>
+</body>
+</html>

@@ -130,6 +130,22 @@ This project creates an interactive robot controllable via natural language comm
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *(This step can take significant time on a Pi Zero)*
+    *Once encountering error can try the following steps*
+    1. deactivate virtual enviroment
+    2. Update Package Lists: Make sure your package list is up-to-date:
+       ```bash
+       sudo apt update
+       ```
+    3. install Cargo:
+       ```bash
+       sudo apt install cargo -y
+       ```
+    4. Verify Installation (Optional): After it finishes, you can check the versions:
+       ```bash
+       cargo --version
+       rustc --version
+       ```
+    5. activate virtual enviroment and install library again
 
 ### 5. Code Setup
 
@@ -316,6 +332,22 @@ This project creates an interactive robot controllable via natural language comm
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *(Pi Zeroでは時間がかかります)*
+    *Once encountering error can try the following steps*
+    1. deactivate virtual enviroment
+    2. Update Package Lists: Make sure your package list is up-to-date:
+       ```bash
+       sudo apt update
+       ```
+    3. install Cargo:
+       ```bash
+       sudo apt install cargo -y
+       ```
+    4. Verify Installation (Optional): After it finishes, you can check the versions:
+       ```bash
+       cargo --version
+       rustc --version
+       ```
+    5. activate virtual enviroment and install library again
 
 ### 5. コードのセットアップ (Code Setup)
 

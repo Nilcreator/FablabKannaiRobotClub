@@ -157,6 +157,7 @@ This project creates an interactive robot controllable via natural language comm
     *   `ninja_core.py` (The final version incorporating V1.4 features)
     *   `Ninja_Voice_Control.py` (Script for "Robot Mic" mode)
     *   `web_interface.py` (The final Flask server combining features)
+    *   `DFRobot_RaspberryPi_Expansion_Board.py`(If you are using DFRobot RaspberryPi Expansion HAT board for zero)
 2.  **Create `templates` Directory:** Inside the project directory:
     ```bash
     mkdir templates
@@ -360,6 +361,7 @@ This project creates an interactive robot controllable via natural language comm
     *   `ninja_core.py` (V1.4以降の機能を含む最終版)
     *   `Ninja_Voice_Control.py` (「Robot Mic」モード用)
     *   `web_interface.py` (機能を統合した最終版Flaskサーバー)
+    *   `DFRobot_RaspberryPi_Expansion_Board.py`(If you are using DFRobot RaspberryPi Expansion HAT board for zero)
 2.  **`templates` ディレクトリの作成:** プロジェクトディレクトリ内：
     ```bash
     mkdir templates

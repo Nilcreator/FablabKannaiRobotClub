@@ -114,20 +114,20 @@ This project creates an interactive robot controllable via natural language comm
     *   Save (`Ctrl+X`, `Y`, `Enter`) and reboot: `sudo reboot`
 5.  **Install System Dependencies:** Install libraries needed by the Python packages:
     ```bash
-    sudo apt install -y portaudio19-dev ffmpeg libopenblas-base python3-dev python3-pip python3-venv git
+    sudo apt install -y python3-dev python3-pip python3-venv build-essential libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 ffmpeg flac libatlas-base-dev
     ```
 6.  **Create Project Directory & Virtual Environment (Recommended):**
     ```bash
-    mkdir ~/ninja_robot_v4 # Or your preferred project name
-    cd ~/ninja_robot_v4
-    python3 -m venv .venv # Create virtual environment named .venv
-    source .venv/bin/activate # Activate the environment
+    mkdir ~/ninja_robot_v2 # Or your preferred project name
+    cd ~/ninja_robot_v2
+    python3 -m venv .venv # Create virtual environment named NinjaRobot
+    source NinjaRobot/bin/activate # Activate the environment
     ```
     *(Your terminal prompt should now start with `(.venv)`)*
 7.  **Install Python Libraries:** (Make sure the virtual environment is active)
     ```bash
     pip install --upgrade pip
-    pip install Flask google-generativeai SpeechRecognition gTTS gpiozero pygame sounddevice PyAudio RPi.GPIO DFRobot_RaspberryPi_Expansion_Board
+    pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *(This step can take significant time on a Pi Zero)*
 
@@ -300,20 +300,20 @@ This project creates an interactive robot controllable via natural language comm
     *   保存 (`Ctrl+X`, `Y`, `Enter`) して再起動：`sudo reboot`
 5.  **システム依存関係のインストール:** Pythonパッケージに必要なライブラリをインストール：
     ```bash
-    sudo apt install -y portaudio19-dev ffmpeg libopenblas-base python3-dev python3-pip python3-venv git
+    sudo apt install -y python3-dev python3-pip python3-venv build-essential libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 ffmpeg flac libatlas-base-dev
     ```
 6.  **プロジェクトディレクトリと仮想環境の作成 (推奨):**
     ```bash
     mkdir ~/ninja_robot_v4 # または好きな名前
     cd ~/ninja_robot_v4
-    python3 -m venv .venv # .venv という名前で仮想環境作成
-    source .venv/bin/activate # 環境を有効化
+    python3 -m venv NinjaRobot # NinjaRobot という名前で仮想環境作成
+    source NinjaRobot/bin/activate # 環境を有効化
     ```
-    *(ターミナルプロンプトの先頭に `(.venv)` が表示されます)*
+    *(ターミナルプロンプトの先頭に `(NinjaRobot)` が表示されます)*
 7.  **Pythonライブラリのインストール:** (仮想環境が有効なことを確認)
     ```bash
     pip install --upgrade pip
-    pip install Flask google-generativeai SpeechRecognition gTTS gpiozero pygame sounddevice PyAudio RPi.GPIO DFRobot_RaspberryPi_Expansion_Board
+    pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *(Pi Zeroでは時間がかかります)*
 

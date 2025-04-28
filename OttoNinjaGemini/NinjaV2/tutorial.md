@@ -130,6 +130,7 @@ This project creates an interactive robot controllable via natural language comm
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *(This step can take significant time on a Pi Zero)*
+    > **Note:** If `SpeechRecognition` fails related to PyAudio, try `pip install pyaudio` after installing the `apt` packages above.
     *Once encountering error can try the following steps*
     1. deactivate virtual enviroment
     2. Update Package Lists: Make sure your package list is up-to-date:
@@ -332,6 +333,7 @@ This project creates an interactive robot controllable via natural language comm
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *(Pi Zeroでは時間がかかります)*
+    > **Note:** If `SpeechRecognition` fails related to PyAudio, try `pip install pyaudio` after installing the `apt` packages above.
     *Once encountering error can try the following steps*
     1. deactivate virtual enviroment
     2. Update Package Lists: Make sure your package list is up-to-date:

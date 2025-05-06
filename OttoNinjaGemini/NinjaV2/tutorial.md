@@ -120,7 +120,7 @@ This project creates an interactive robot controllable via natural language comm
     ```bash
     mkdir ~/ninja_robot_v2 # Or your preferred project name
     cd ~/ninja_robot_v2
-    python3 -m venv .venv # Create virtual environment named NinjaRobot
+    python3 -m venv NinjaRobot # Create virtual environment named NinjaRobot
     source NinjaRobot/bin/activate # Activate the environment
     ```
     *(Your terminal prompt should now start with `(.venv)`)*

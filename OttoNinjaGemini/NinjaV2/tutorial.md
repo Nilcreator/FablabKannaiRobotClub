@@ -44,7 +44,7 @@ This project creates an interactive robot controllable via natural language comm
 *   **Raspberry Pi Zero:** W or WH model recommended for built-in WiFi/Bluetooth.
 *   **Micro SD Card:** 16GB+ recommended (due to swap usage during setup), Class 10, flashed with Raspberry Pi OS.
 *   **Power Supply:** Stable 5V, >= 2.5A micro USB power supply. **Crucial for stability during compilation!**
-*   **DFRobot IO Expansion HAT:** Compatible with Raspberry Pi Zero GPIO layout.
+*   **DFRobot IO Expansion HAT for raspberry pi zero:** Compatible with Raspberry Pi Zero GPIO layout.
 *   **INMP441 I2S Microphone Module:** For onboard voice input.
 *   **HC-SR04 Ultrasonic Distance Sensor:** For obstacle detection.
 *   **Active Buzzer Module:** For audio feedback sounds.

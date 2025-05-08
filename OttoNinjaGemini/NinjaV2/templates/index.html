@@ -1,0 +1,731 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <!-- Ensures proper rendering and touch zooming on mobile devices -->
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <title>Ninja Robot Controller</title>
+    <style>
+        /* --- Global Reset & Base Styles --- */
+
+        /* Apply box-sizing globally for more intuitive width/height calculations */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: sans-serif; /* Basic readable font */
+            background-color: #1a1a1a; /* Dark background for the page */
+            color: #ccc;              /* Light text color for contrast */
+            display: flex;             /* Use flexbox for overall layout */
+            justify-content: flex-start;/* Align content towards the top */
+            align-items: center;       /* Center content horizontally */
+            min-height: 100vh;         /* Ensure body takes at least full viewport height */
+            flex-direction: column;    /* Stack elements vertically */
+            padding: 20px;             /* Add some space around the edges */
+        }
+
+        /* Optional container if needed later, currently using body flex */
+        .container {
+             width: 100%;
+             display: flex;
+             flex-direction: column;
+             align-items: center;
+        }
+
+        /* --- Controller Styles --- */
+
+        .controller {
+            position: relative; /* Needed for absolute positioning of children */
+            width: 450px;       /* Default width for larger screens */
+            max-width: 95%;     /* Prevent exceeding screen width */
+            height: 200px;      /* Default height */
+            background-color: #303030; /* Controller body color */
+            border-radius: 15px;       /* Rounded corners */
+            /* Shadow for depth, inset shadow for slight highlight */
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.4), inset 0 2px 3px rgba(255, 255, 255, 0.1);
+            display: flex;             /* Use flexbox for internal layout */
+            justify-content: space-between; /* Space out D-pad and Action buttons */
+            align-items: center;       /* Center items vertically */
+            padding: 20px 30px;        /* Internal spacing */
+            margin-bottom: 20px;       /* Space below the controller */
+            flex-shrink: 0;            /* Prevent controller from shrinking if space is tight */
+        }
+
+        /* --- Base Styles for All Controller Buttons --- */
+
+        .ctrl-button {
+            border: none;             /* Remove default border */
+            cursor: pointer;          /* Indicate clickable */
+            background-color: #444; /* Default button color */
+            /* Shadow for 3D effect, inset for top highlight */
+            box-shadow: 0 3px 5px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+            transition: all 0.1s ease-in-out; /* Smooth transition for press effect */
+            color: #ccc;              /* Default text/icon color */
+            font-weight: bold;
+            display: flex;            /* Use flexbox to center content inside button */
+            justify-content: center;
+            align-items: center;
+            user-select: none;        /* Prevent selecting text on button */
+            -webkit-tap-highlight-color: transparent; /* Remove tap highlight on mobile */
+        }
+
+        /* Style for when a button is actively pressed */
+        .ctrl-button:active {
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6); /* "Pressed in" effect */
+            transform: translateY(1px); /* Slight downward movement on press */
+        }
+
+        /* --- D-Pad & Action Button Container Styles --- */
+
+        .d-pad, .action-buttons {
+            position: relative; /* Position context for absolute buttons inside */
+            width: 90px;        /* Container size (desktop) */
+            height: 90px;       /* Container size (desktop) */
+            flex-shrink: 0;     /* Prevent container shrinking */
+        }
+
+        /* --- Action Buttons (Right Side - Triangle, Square, etc.) --- */
+
+        .action-button {
+            position: absolute; /* Position relative to .action-buttons container */
+            width: 35px;        /* Button size (desktop) */
+            height: 35px;       /* Button size (desktop) - MUST match width for circle */
+            border-radius: 50%; /* Make it circular */
+            font-size: 1.5em;   /* Size of the symbol inside */
+            line-height: 35px;  /* Vertically center symbol (match height) */
+            text-align: center; /* Horizontally center symbol */
+        }
+
+        /* Specific positioning and colors for each action button */
+        #btn-triangle { top: 0; left: 50%; transform: translateX(-50%); color: #4CAF50; text-shadow: 0 0 5px #4CAF50; }
+        #btn-square   { left: 0; top: 50%; transform: translateY(-50%); color: #f48fb1; text-shadow: 0 0 5px #f48fb1; }
+        #btn-circle   { right: 0; top: 50%; transform: translateY(-50%); color: #F44336; text-shadow: 0 0 5px #F44336; }
+        #btn-x        { bottom: 0; left: 50%; transform: translateX(-50%); color: #2196F3; text-shadow: 0 0 5px #2196F3; }
+
+        /* Style for the currently active Mode button (Walk/Run) */
+        .mode-active {
+             /* Add a white glow and slightly different shadow */
+             box-shadow: 0 0 10px 3px #fff, 0 3px 5px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+             border: 1px solid #eee;
+        }
+
+        /* --- D-Pad Buttons (Left Side) --- */
+
+        .d-pad-button {
+            position: absolute; /* Position relative to .d-pad container */
+            width: 30px;        /* Button size (desktop) */
+            height: 30px;       /* Button size (desktop) */
+            background-color: #555; /* D-pad button color */
+            border-radius: 4px;     /* Slightly rounded squares */
+            color: #ccc;
+            font-size: 1.5em;       /* Arrow size */
+        }
+
+        /* Specific positioning for each D-pad button */
+        #dpad-up    { top: 0; left: 50%; transform: translateX(-50%); }
+        #dpad-left  { left: 0; top: 50%; transform: translateY(-50%); }
+        #dpad-right { right: 0; top: 50%; transform: translateY(-50%); }
+        #dpad-down  { bottom: 0; left: 50%; transform: translateX(-50%); }
+
+        /* --- Center Area (Speed, REC, REST buttons) --- */
+
+        .center-area {
+            position: absolute; /* Position in the middle of .controller */
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%); /* Precise centering */
+            display: flex;            /* Use flexbox for internal layout */
+            flex-direction: column;   /* Stack rows vertically */
+            align-items: center;      /* Center rows horizontally */
+            gap: 8px;                 /* Vertical space between rows */
+            /* Width calculated to fit 3 speed buttons + 2 gaps */
+            width: calc(3 * 50px + 2 * 8px); /* Explicit calculation */
+        }
+
+        .speed-controls {
+            display: flex;      /* Arrange speed buttons horizontally */
+            gap: 8px;           /* Horizontal space between speed buttons */
+            width: 100%;        /* Take full width of .center-area */
+            justify-content: center; /* Center speed buttons within their row */
+        }
+
+        .speed-button {
+             width: 50px;        /* Fixed width */
+             height: 20px;       /* Fixed height */
+             border-radius: 10px; /* Pill shape */
+             font-size: 0.65em;  /* Small font */
+             padding: 0 5px;     /* Internal horizontal padding */
+             box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+        }
+
+        /* Style for REC and REST buttons */
+        .main-center-button {
+            width: 100%;        /* Span full width of .center-area */
+            height: 25px;       /* Slightly taller than speed buttons */
+            border-radius: 10px;/* Pill shape */
+            font-size: 0.8em;   /* Font size */
+            padding: 0 5px;
+            box-shadow: 0 2px 3px rgba(0, 0, 0, 0.5), inset 0 1px 1px rgba(255, 255, 255, 0.15);
+             /* Inherits base styles from .ctrl-button */
+        }
+
+        /* Specific style for REC button when recording */
+        #btn-select-record.recording {
+             background-color: #d9534f; /* Red background */
+        }
+
+        /* Style for the currently active speed button */
+        .active-speed {
+            background-color: #6a6a6a; /* Highlight background */
+            box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.6); /* "Pressed in" */
+            border: 1px solid #888; /* Subtle border */
+        }
+
+        /* --- Status Display Area Styles --- */
+
+        .status-container {
+             width: 90%;              /* Relative width */
+             max-width: 600px;        /* Max width on large screens */
+             background: #303030;     /* Match controller body */
+             padding: 15px;
+             border-radius: 8px;
+             box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+             color: #ccc;
+             margin-top: 20px;        /* Space below controller */
+             font-size: 0.9em;        /* Base font size */
+         }
+
+         .status-container h2 {
+             margin-top: 0;
+             color: #eee;
+             border-bottom: 1px solid #555; /* Separator line */
+             padding-bottom: 5px;
+         }
+
+         .status-container p {
+             margin: 5px 0; /* Spacing for status lines */
+         }
+
+         /* Style for preformatted text (AI interpretation) */
+         .status-container pre {
+             background-color: #222;  /* Darker background */
+             padding: 8px;
+             border: 1px solid #444;
+             border-radius: 4px;
+             white-space: pre-wrap;   /* Allow wrapping */
+             word-wrap: break-word;   /* Break long words */
+             max-height: 100px;       /* Limit height */
+             overflow-y: auto;        /* Add scrollbar if needed */
+             color: #bbb;
+             font-size: 0.85em;       /* Smaller font for code-like text */
+         }
+
+         #processing-status {
+             font-style: italic;
+             color: #aaa;
+             margin-top: 10px;
+             display: block;         /* Make it a block element */
+             text-align: center;     /* Center the text */
+             min-height: 1.2em;      /* Reserve space even when empty */
+         }
+
+        /* --- Flash Message Styles (Feedback after actions) --- */
+
+        .flash-messages {
+             list-style: none; /* Remove bullet points */
+             padding: 0;
+             margin-bottom: 15px;
+         }
+         .flash-messages li {
+             padding: 10px;
+             margin-bottom: 10px;
+             border-radius: 4px;
+             border: 1px solid; /* Border color defined by category */
+         }
+         /* Color coding for different message types */
+         .flash-success { background-color: #dff0d8; border-color: #d6e9c6; color: #3c763d; }
+         .flash-error   { background-color: #f2dede; border-color: #ebccd1; color: #a94442; }
+         .flash-warning { background-color: #fcf8e3; border-color: #faebcc; color: #8a6d3b; }
+         .flash-info    { background-color: #d9edf7; border-color: #bce8f1; color: #31708f; }
+
+
+        /* --- Media Query for Mobile Devices --- */
+        /* These styles apply only when screen width is 500px or less */
+        @media (max-width: 500px) {
+            body {
+                 padding: 10px; /* Reduce body padding */
+            }
+            .controller {
+                width: 100%;       /* Use full available width */
+                height: auto;      /* Allow height to adjust */
+                padding: 15px;     /* Reduce controller padding */
+                flex-direction: column; /* Stack D-pad, Center, Actions vertically */
+                gap: 25px;         /* Add vertical space between stacked sections */
+            }
+
+            /* Adjust container sizes for better fit */
+            .d-pad, .action-buttons {
+                width: 110px;      /* Slightly larger touch area relative to screen */
+                height: 110px;
+                position: relative;/* Ensure proper stacking in column layout */
+            }
+
+            /* Increase button sizes for easier tapping */
+            .d-pad-button {
+                width: 35px;
+                height: 35px;
+                font-size: 1.6em;
+            }
+            .action-button {
+                width: 40px;
+                height: 40px;      /* Keep equal for circular shape */
+                font-size: 1.7em;
+                line-height: 40px; /* Match height */
+            }
+            /* Absolute positioning within containers still works */
+
+
+            /* Adjust Center Area for vertical stacking */
+            .center-area {
+                position: relative; /* Remove absolute positioning */
+                left: auto;
+                top: auto;
+                transform: none;    /* Remove transform */
+                width: 80%;         /* Wider relative to controller */
+                max-width: 200px;   /* Limit max width */
+                order: 1;           /* Place between D-Pad (0) and Actions (0) */
+            }
+            .speed-controls { gap: 5px; } /* Reduce gap slightly */
+            .speed-button { width: 55px; font-size: 0.7em; }
+            .main-center-button { font-size: 0.9em; height: 30px; }
+
+
+             /* Adjust Status container */
+             .status-container {
+                 width: 100%;     /* Use full width */
+                 font-size: 0.8em;/* Slightly smaller text */
+                 margin-top: 15px;
+             }
+             .status-container pre { max-height: 80px; } /* Smaller interpretation box */
+        }
+
+    </style>
+</head>
+<body>
+
+    <!-- Main container for layout -->
+    <div class="container">
+
+        <!-- The Controller Visual Structure -->
+        <div class="controller">
+            <!-- D-Pad (Left Group) -->
+            <div class="d-pad">
+                <button id="dpad-up" class="ctrl-button d-pad-button">▲</button>
+                <button id="dpad-left" class="ctrl-button d-pad-button">◀</button>
+                <button id="dpad-right" class="ctrl-button d-pad-button">▶</button>
+                <button id="dpad-down" class="ctrl-button d-pad-button">▼</button>
+            </div>
+
+            <!-- Center Area (Speed, Rec, Rest) -->
+            <div class="center-area">
+                <!-- Speed Control Row -->
+                <div class="speed-controls">
+                     <button id="btn-slow" class="ctrl-button speed-button">SLOW</button>
+                     <button id="btn-normal" class="ctrl-button speed-button active-speed">NORMAL</button>
+                     <button id="btn-fast" class="ctrl-button speed-button">FAST</button>
+                </div>
+                <!-- Record Button -->
+                <button id="btn-select-record" class="ctrl-button main-center-button" disabled>REC</button>
+                <!-- Rest Button -->
+                <button id="btn-start-rest" class="ctrl-button main-center-button">REST</button>
+            </div>
+
+            <!-- Action Buttons (Right Group) -->
+            <div class="action-buttons">
+                <button id="btn-triangle" class="ctrl-button action-button mode-active">△</button>
+                <button id="btn-square" class="ctrl-button action-button">□</button>
+                <button id="btn-circle" class="ctrl-button action-button">○</button>
+                <button id="btn-x" class="ctrl-button action-button">×</button>
+            </div>
+        </div>
+        <!-- Placeholder for microphone/processing status messages -->
+         <div id="processing-status">Initializing...</div>
+
+        <!-- Status Display Area -->
+        <div class="status-container">
+             <!-- Area for dynamic JS/Server flash messages -->
+            <div id="flash-container">
+                 {% with messages = get_flashed_messages(with_categories=true) %}
+                   {% if messages %} <ul class=flash-messages> {% for category, message in messages %} <li class="flash-{{ category }}">{{ message }}</li> {% endfor %} </ul> {% endif %}
+                 {% endwith %}
+            </div>
+            <!-- Status Information -->
+            <h2>Status</h2>
+            <p><strong>Robot State:</strong> <span id="robot-state">{{ robot_state }}</span></p>
+            <p><strong>Current Mode:</strong> <span id="current-mode">Walk</span> | <strong>Speed:</strong> <span id="current-speed">Normal</span></p>
+            <p><strong>Last System Message:</strong> <span id="system-status">{{ status }}</span></p>
+            <p><strong>Last Command (<span id="last-command-type">{{ last_command_type }}</span>):</strong> <span id="last-command-content">{{ last_command_content }}</span></p>
+            <h2>Last Action/Interpretation:</h2>
+            <pre id="last-interpretation">{{ interpretation }}</pre>
+        </div>
+    </div>
+
+
+    <!-- JavaScript for Interactivity -->
+    <script>
+        // --- Section: DOM Element References ---
+        // Get references to all interactive HTML elements once the page loads.
+        // This makes the code cleaner and slightly more efficient than querying the DOM repeatedly.
+        const dpadUp = document.getElementById('dpad-up');
+        const dpadDown = document.getElementById('dpad-down');
+        const dpadLeft = document.getElementById('dpad-left');
+        const dpadRight = document.getElementById('dpad-right');
+        const btnTriangle = document.getElementById('btn-triangle'); // Walk Mode Select
+        const btnSquare = document.getElementById('btn-square');     // Run Mode Select
+        const btnCircle = document.getElementById('btn-circle');     // Hello Action
+        const btnX = document.getElementById('btn-x');            // Stop Action
+        const btnSelectRecord = document.getElementById('btn-select-record'); // Record Voice
+        const btnStartRest = document.getElementById('btn-start-rest');       // Rest Action
+        const btnSlow = document.getElementById('btn-slow');         // Speed Control
+        const btnNormal = document.getElementById('btn-normal');     // Speed Control
+        const btnFast = document.getElementById('btn-fast');         // Speed Control
+
+        // References to elements used for displaying status and feedback
+        const processingStatus = document.getElementById('processing-status'); // For voice status
+        const statusElement = document.getElementById('system-status');        // Main status msg
+        const modeElement = document.getElementById('current-mode');           // Displays Walk/Run
+        const speedElement = document.getElementById('current-speed');         // Displays Slow/Normal/Fast
+        const commandTypeElement = document.getElementById('last-command-type'); // Displays Controller/Voice
+        const commandContentElement = document.getElementById('last-command-content'); // Displays command name/transcript
+        const interpretationElement = document.getElementById('last-interpretation'); // Shows JSON from Gemini/direct action
+        const robotStateElement = document.getElementById('robot-state');       // Shows Idle/Moving state
+        const flashContainer = document.getElementById('flash-container');      // Area for temporary messages
+
+
+        // --- Section: State Variables ---
+        // Variables to keep track of the controller's current state.
+        let currentMode = 'walk';     // 'walk' or 'run', starts in 'walk'
+        let currentSpeed = 'normal';  // 'slow', 'normal', or 'fast', starts in 'normal'
+        let recognition;              // Will hold the SpeechRecognition object
+        let isRecording = false;      // Flag to track if voice recording is active
+
+
+        // --- Section: Helper Functions ---
+
+        /**
+         * Sends a command action (triggered by controller buttons) to the Flask backend.
+         * @param {string} commandName - The internal name of the command (e.g., 'walk', 'stop', 'hello').
+         */
+        async function sendCommand(commandName) {
+            // Read the currently selected speed
+            const speedToSend = currentSpeed;
+            console.log(`Sending command: ${commandName}, Speed: ${speedToSend}`);
+            processingStatus.textContent = `Sending: ${commandName} (${speedToSend})...`;
+            clearFlashMessages(); // Clear previous feedback messages
+
+            // Update UI immediately to show what was sent
+            commandTypeElement.textContent = "Controller";
+            commandContentElement.textContent = `${commandName} (${speedToSend})`;
+            // Create a temporary object representing the action for display
+            let tempInterpretation = { action_type: "move", move_function: commandName};
+             // Only include speed if relevant for the command
+             if (!['stop', 'hello', 'rest', 'reset_servos'].includes(commandName)) {
+                tempInterpretation.speed = speedToSend;
+             }
+            interpretationElement.textContent = JSON.stringify(tempInterpretation, null, 2);
+
+            // Send the command data to the backend using the Fetch API
+            try {
+                const response = await fetch("{{ url_for('handle_controller_command') }}", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ command: commandName, speed: speedToSend }) // Send command and speed
+                });
+                const result = await response.json(); // Parse the JSON response from Flask
+                console.log("Server response (controller):", result);
+
+                // Update UI elements based on the server's response
+                processingStatus.textContent = `Server: ${result.message || 'No message.'}`;
+                statusElement.textContent = result.message || 'No status message.';
+                interpretationElement.textContent = JSON.stringify(result.interpretation || {}, null, 2);
+                // TODO: Ideally, get real-time robot state via WebSockets or periodic fetch
+                // robotStateElement.textContent = result.robot_state || 'Unknown';
+
+                // Display a flash message using the category provided by the server
+                addFlashMessage(result.message || 'Processing complete.', result.status || 'info');
+
+            } catch (err) {
+                 // Handle network errors or issues sending the command
+                 console.error("Error sending controller command:", err);
+                 processingStatus.textContent = 'Error sending command. Check console/server.';
+                 statusElement.textContent = 'Error sending command.';
+                 addFlashMessage('Error sending command to server.', "error");
+            }
+        }
+
+        /**
+         * Sends transcribed text (from voice input) to the Flask backend for interpretation.
+         * @param {string} transcript - The text transcribed from the user's voice.
+         */
+         async function sendTranscribedText(transcript) {
+             console.log(`Sending transcript: ${transcript}`);
+             processingStatus.textContent = `Sending transcript: "${transcript}"...`;
+             clearFlashMessages();
+
+             // Update UI immediately
+             commandTypeElement.textContent = "Voice";
+             commandContentElement.textContent = transcript;
+             interpretationElement.textContent = "Processing via AI..."; // Placeholder
+
+             // Send the text data to the backend
+             try {
+                 const response = await fetch("{{ url_for('handle_voice_command_text') }}", {
+                     method: 'POST',
+                     headers: { 'Content-Type': 'application/json' },
+                     body: JSON.stringify({ command_text: transcript }) // Send transcribed text
+                 });
+                 const result = await response.json(); // Parse JSON response
+                 console.log("Server response (voice):", result);
+
+                 // Update UI based on the server's response
+                 processingStatus.textContent = `Server: ${result.message || 'No message.'}`;
+                 statusElement.textContent = result.message || 'No status message.';
+                 interpretationElement.textContent = JSON.stringify(result.interpretation || {}, null, 2);
+
+                 // Display flash message based on server's category
+                 addFlashMessage(result.message || 'Processing complete.', result.status || 'info');
+
+             } catch (err) {
+                  // Handle network errors
+                  console.error("Error sending transcript:", err);
+                  processingStatus.textContent = 'Error sending transcript. Check console/server.';
+                  statusElement.textContent = 'Error sending transcript.';
+                  addFlashMessage('Error sending transcript to server.', "error");
+             } finally {
+                 // Reset recording button state if it's still visually 'recording'
+                 if(isRecording) {
+                    isRecording = false;
+                    btnSelectRecord.textContent = 'REC';
+                    btnSelectRecord.classList.remove('recording');
+                 }
+             }
+         }
+
+        /**
+         * Updates the UI and state when a speed button is clicked.
+         * @param {string} speed - The selected speed ('slow', 'normal', 'fast').
+         */
+        function setActiveSpeedButton(speed) {
+             currentSpeed = speed; // Update the state variable
+             speedElement.textContent = speed.charAt(0).toUpperCase() + speed.slice(1); // Update UI display (e.g., "Normal")
+
+             // Remove 'active-speed' class from all speed buttons
+             [btnSlow, btnNormal, btnFast].forEach(btn => btn.classList.remove('active-speed'));
+
+             // Add 'active-speed' class to the clicked button
+             if(speed === 'slow') btnSlow.classList.add('active-speed');
+             else if(speed === 'fast') btnFast.classList.add('active-speed');
+             else btnNormal.classList.add('active-speed'); // Default to normal visually
+
+             processingStatus.textContent = `Speed set to: ${speed}`;
+             console.log(`Speed set to: ${speed}`);
+        }
+
+        /** Adds a dynamically created flash message to the UI. */
+        function addFlashMessage(message, category) {
+            const flashList = flashContainer.querySelector('.flash-messages') || createFlashList();
+            const listItem = document.createElement('li');
+            listItem.className = `flash-${category}`; // Apply style based on category
+            listItem.textContent = message;
+            flashList.appendChild(listItem);
+            // Optional: Remove the message after a delay
+            // setTimeout(() => { if(listItem.parentNode) listItem.parentNode.removeChild(listItem); }, 7000);
+        }
+
+        /** Creates the <ul> element for flash messages if it doesn't exist. */
+        function createFlashList() {
+            clearFlashMessages(); // Clear any old list first
+            const ul = document.createElement('ul');
+            ul.className = 'flash-messages';
+            flashContainer.appendChild(ul);
+            return ul;
+        }
+
+        /** Removes all current flash messages from the UI. */
+        function clearFlashMessages() {
+             const existingList = flashContainer.querySelector('.flash-messages');
+             if (existingList) {
+                 flashContainer.innerHTML = ''; // Clear the container's content
+             }
+        }
+
+
+        // --- Section: Event Listener Setup ---
+        // Assign actions to button clicks.
+
+        // Mode Selection Buttons
+        btnTriangle.onclick = () => { // Switch to Walk mode
+            if (currentMode !== 'walk') { // Only switch if not already in walk mode
+                currentMode = 'walk';
+                modeElement.textContent = 'Walk'; // Update display
+                btnTriangle.classList.add('mode-active');    // Highlight Triangle
+                btnSquare.classList.remove('mode-active'); // Unhighlight Square
+                processingStatus.textContent = "Mode: Walk";
+                console.log("Mode: Walk");
+            }
+        };
+        btnSquare.onclick = () => { // Switch to Run mode
+             if (currentMode !== 'run') { // Only switch if not already in run mode
+                currentMode = 'run';
+                modeElement.textContent = 'Run';   // Update display
+                btnSquare.classList.add('mode-active');      // Highlight Square
+                btnTriangle.classList.remove('mode-active'); // Unhighlight Triangle
+                processingStatus.textContent = "Mode: Run";
+                console.log("Mode: Run");
+            }
+        };
+
+        // Speed Selection Buttons
+        btnSlow.onclick = () => setActiveSpeedButton('slow');
+        btnNormal.onclick = () => setActiveSpeedButton('normal');
+        btnFast.onclick = () => setActiveSpeedButton('fast');
+
+        // D-Pad Buttons (Action depends on currentMode)
+        dpadUp.onclick = () => sendCommand(currentMode === 'walk' ? 'walk' : 'run');
+        dpadDown.onclick = () => sendCommand(currentMode === 'walk' ? 'stepback' : 'runback');
+        dpadLeft.onclick = () => sendCommand(currentMode === 'walk' ? 'turnleft_step' : 'rotateleft');
+        dpadRight.onclick = () => sendCommand(currentMode === 'walk' ? 'turnright_step' : 'rotateright');
+
+        // Action & Center Buttons (Fixed Actions)
+        btnCircle.onclick = () => sendCommand('hello'); // Always triggers 'hello'
+        btnX.onclick = () => sendCommand('stop');       // Always triggers 'stop'
+        btnStartRest.onclick = () => sendCommand('rest');    // Always triggers 'rest'
+
+
+        // --- Section: Web Speech API Initialization and Handlers ---
+
+        // Check if the browser supports the Web Speech API
+        window.SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+
+        if (window.SpeechRecognition) {
+            // Create a new SpeechRecognition instance
+            recognition = new SpeechRecognition();
+            recognition.continuous = false; // Stop after first utterance
+            recognition.lang = 'en-US';     // Set language
+            recognition.interimResults = false;// Only get final results
+            recognition.maxAlternatives = 1;   // Get only the most likely transcript
+
+            // Initial button state
+            btnSelectRecord.textContent = 'REC';
+            btnSelectRecord.disabled = false; // Enable the button now
+            processingStatus.textContent = "Ready.";
+
+            // --- Event Handler: When speech is successfully recognized ---
+            recognition.onresult = (event) => {
+                // Get the transcribed text
+                const transcript = event.results[0][0].transcript.trim();
+                console.log('Transcript:', transcript);
+                processingStatus.textContent = `Transcribed: "${transcript}". Sending...`;
+
+                // Send the transcript to the backend helper function
+                sendTranscribedText(transcript);
+                // Note: Button state is reset within sendTranscribedText's 'finally' block
+            };
+
+            // --- Event Handler: When the user stops speaking ---
+            recognition.onspeechend = () => {
+                console.log("Speech ended detected.");
+                // If the recognition is still marked as 'recording', explicitly stop it.
+                // This helps ensure the 'onresult' or 'onerror' event fires.
+                if (isRecording) {
+                    recognition.stop();
+                }
+                // Don't change button state here; wait for onresult or onerror.
+            };
+
+            // --- Event Handler: If speech is detected but not recognized ---
+            recognition.onnomatch = (event) => {
+                console.log("No speech match found.");
+                processingStatus.textContent = 'Could not recognize speech. Try again.';
+                // Reset button state
+                btnSelectRecord.disabled = false;
+                btnSelectRecord.classList.remove('recording');
+                btnSelectRecord.textContent = 'REC';
+                isRecording = false;
+                addFlashMessage('Could not recognize speech. Try again.', "warning");
+            };
+
+            // --- Event Handler: If an error occurs during recognition ---
+             recognition.onerror = (event) => {
+                console.error('Speech recognition error:', event.error);
+                let errorMsg = `Speech Error: ${event.error}`;
+                // Provide more user-friendly messages for common errors
+                if (event.error === 'network') { errorMsg += ". Check network connection."; }
+                else if (event.error === 'not-allowed' || event.error === 'service-not-allowed') { errorMsg += ". Microphone permission denied? Check browser settings. HTTPS might be required."; }
+                else if (event.error === 'no-speech') { errorMsg = "No speech detected. Please try again."; }
+
+                processingStatus.textContent = errorMsg;
+                // Reset button state
+                btnSelectRecord.disabled = false;
+                btnSelectRecord.classList.remove('recording');
+                btnSelectRecord.textContent = 'REC';
+                isRecording = false;
+                addFlashMessage(errorMsg, "error");
+            };
+
+            // --- Record Button Click Handler ---
+             btnSelectRecord.onclick = () => {
+                if (!isRecording) { // If not currently recording -> Start recording
+                    try {
+                        recognition.start(); // Start listening
+                        isRecording = true;
+                        btnSelectRecord.textContent = 'Listening...'; // Update button text
+                        btnSelectRecord.classList.add('recording'); // Apply recording style
+                        processingStatus.textContent = 'Listening... Speak your command.';
+                        console.log('Speech recognition started.');
+                        clearFlashMessages(); // Clear old feedback
+                    } catch(e) {
+                        // Handle errors if recognition can't start
+                        console.error("Error starting recognition:", e);
+                        processingStatus.textContent = "Error starting recognition.";
+                        isRecording = false; // Ensure state is reset
+                        btnSelectRecord.textContent = 'REC';
+                        btnSelectRecord.classList.remove('recording');
+                    }
+                } else { // If currently recording -> Stop recording
+                     try {
+                         recognition.stop(); // Request stop listening
+                         processingStatus.textContent = 'Stopping listening...';
+                         console.log('Speech recognition stop requested by user.');
+                         // Note: Actual stop and state reset happen in onresult/onerror/etc. handlers
+                     } catch(e) {
+                          // Handle errors if stopping fails
+                          console.error("Error stopping recognition:", e);
+                          processingStatus.textContent = "Error stopping recognition.";
+                          // Force reset button state if stop fails badly
+                          isRecording = false;
+                          btnSelectRecord.textContent = 'REC';
+                          btnSelectRecord.classList.remove('recording');
+                     }
+                }
+            };
+
+        } else {
+            // --- Fallback if Web Speech API is not supported ---
+            btnSelectRecord.textContent = 'Voice N/A';
+            btnSelectRecord.disabled = true; // Disable the button
+            processingStatus.textContent = "Web Speech API not supported by this browser.";
+            console.error("Web Speech API not supported by this browser.");
+        }
+
+        // --- Initial Setup on Page Load ---
+        // Clear any flash messages that might have been rendered by the server on initial load
+        window.onload = clearFlashMessages;
+
+    </script>
+
+</body>
+</html>

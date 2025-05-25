@@ -168,11 +168,12 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     *(Your terminal prompt should now start with `(.venv)`)*
 
 9.  **Install Python Libraries:**
-    With Rust and swap configured, we can now install the Python packages.
+    With Rust and swap configured, we can now install the Python packages. Install smbus for DFRobot IO Expansion board.
     **This step will also take a very long time (potentially 1-2+ hours) due to compilation on the Pi Zero.** Be patient.
     ```bash
     pip install --upgrade pip
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
+　　 pip install smbus
     ```
     *   **Note on PyAudio:** If `SpeechRecognition` or `google-cloud-speech` later complains about PyAudio, and the `apt` packages in step 4.5 didn't cover it, you might need to install it explicitly:
         `pip install pyaudio` (ensure system dependencies from 4.5 are installed first).
@@ -420,11 +421,12 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     *(ターミナルプロンプトの先頭に `(.venv)` が表示されます)*
 
 9.  **Pythonライブラリのインストール:**
-    Rustとスワップを設定したので、Pythonパッケージをインストールできます。
+    Rustとスワップを設定したので、Pythonパッケージをインストールできます。DFRobot IO expansion boardを使いければ、 Imbusをインストールしてください。
     **このステップもPi Zeroでのコンパイルのため非常に時間がかかります（1～2時間以上かかる可能性があります）。** 辛抱強く待ってください。
     ```bash
     pip install --upgrade pip
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
+    pip install smbus
     ```
     *   **PyAudioに関する注意:** もし後で `SpeechRecognition` や `google-cloud-speech` がPyAudioについてエラーを出す場合で、ステップ4.5の `apt` パッケージでカバーされていなかった場合は、明示的にインストールする必要があるかもしれません：
         `pip install pyaudio` （まずステップ4.5のシステム依存関係がインストールされていることを確認してください）。

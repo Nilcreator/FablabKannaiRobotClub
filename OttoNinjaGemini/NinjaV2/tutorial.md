@@ -94,7 +94,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
 
 1.  **Install OS:** Use Raspberry Pi Imager to flash Raspberry Pi OS (Lite or Desktop, **32-bit recommended** for Pi Zero compatibility and performance) onto the SD card. Use the advanced options (⚙️ icon) to pre-configure hostname, enable SSH, set user/password, and configure WiFi.
 2.  **First Boot & Connect:** Insert SD card, connect power. Wait a few minutes for the first boot. Connect via SSH from your computer (`ssh your_username@your_pi_hostname.local` or `ssh your_username@<PI_IP_ADDRESS>`).
-3.  **System Update & Essential Tools:** Bring the OS and packages up to date and install `curl` (needed for Rust):
+3.  **System Update & Essential Tools:** Bring the OS and packages up to date and install `curl` and `git`:
     ```bash
     sudo apt update
     sudo apt full-upgrade -y
@@ -115,22 +115,30 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         dtparam=i2s=on
         dtoverlay=googlevoicehat-soundcard
         ```
-    *   Save (`Ctrl+X`, `Y`, `Enter`) 
+    *   Save (`Ctrl+X`, `Y`, `Enter`) and reboot:
+        ```bash
+        sudo reboot
+        ```
+    *(Reconnect via SSH after reboot)*
 5.  **Enable I2C Interface:**
-    *   Using “Raspi-config” on Command Line
+    *   Use the Raspberry Pi Configuration tool:
         ```bash
         sudo raspi-config
         ```
-        Interfacing Options > I2C > Yes > OK > Yes
-    reboot: `sudo reboot`
+    *   Navigate to `Interface Options` -> `I2C`.
+    *   Select `<Yes>` to enable the I2C interface, then `<Ok>`.
+    *   If prompted to reboot, select `<Yes>`. Otherwise, exit `raspi-config` and reboot manually:
+        ```bash
+        sudo reboot
+        ```
     *(Reconnect via SSH after reboot)*
 
-7.  **Install Core System Dependencies:** Install libraries needed for Python and audio processing:
+6.  **Install Core System Dependencies:** Install libraries needed for Python, audio processing, and I2C communication:
     ```bash
-    sudo apt install -y python3-dev python3-pip python3-venv build-essential libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 ffmpeg flac libatlas-base-dev
+    sudo apt install -y python3-dev python3-pip python3-venv build-essential libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 ffmpeg flac libatlas-base-dev python3-smbus
     ```
 
-8.  **Install/Update Rust Compiler:**
+7.  **Install/Update Rust Compiler:**
     Some Python libraries (like `pydantic-core`, a dependency for `google-generativeai`) require a Rust compiler. We'll use `rustup` to install the latest version.
     **This step will take a considerable amount of time (30 mins to 1+ hour).**
     ```bash
@@ -152,7 +160,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         ```
         You should see version numbers (e.g., `rustc 1.7X.X ...`).
 
-9.  **Configure Swap Space (Crucial for Pi Zero):**
+8.  **Configure Swap Space (Crucial for Pi Zero):**
     Compiling some Python packages (especially those with Rust components) is memory-intensive and can fail on the Pi Zero's limited RAM. We'll temporarily increase swap space.
     ```bash
     echo "CONF_SWAPSIZE=1024" | sudo tee /etc/dphys-swapfile # Sets swap to 1GB
@@ -165,7 +173,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         free -h
         ```
 
-10.  **Create Project Directory & Virtual Environment:**
+9.  **Create Project Directory & Virtual Environment:**
     ```bash
     mkdir ~/NinjaRobot # Or your preferred project name
     cd ~/NinjaRobot
@@ -174,18 +182,17 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     ```
     *(Your terminal prompt should now start with `(.venv)`)*
 
-11.  **Install Python Libraries:**
-    With Rust and swap configured, we can now install the Python packages. Install smbus for DFRobot IO Expansion board.
+10. **Install Python Libraries:**
+    With Rust, swap, and system dependencies configured, we can now install the Python packages.
     **This step will also take a very long time (potentially 1-2+ hours) due to compilation on the Pi Zero.** Be patient.
     ```bash
     pip install --upgrade pip
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
-    pip install smbus
     ```
-    *   **Note on PyAudio:** If `SpeechRecognition` or `google-cloud-speech` later complains about PyAudio, and the `apt` packages in step 4.5 didn't cover it, you might need to install it explicitly:
-        `pip install pyaudio` (ensure system dependencies from 4.5 are installed first).
+    *   **Note on PyAudio:** If `SpeechRecognition` or `google-cloud-speech` later complains about PyAudio, and the `apt` packages in step 4.6 didn't cover it, you might need to install it explicitly:
+        `pip install pyaudio` (ensure system dependencies from step 4.6 are installed first).
 
-12. **Revert Swap Space (Optional but Recommended):**
+11. **Revert Swap Space (Optional but Recommended):**
     After the intensive compilation is done, you can revert swap to a smaller default to reduce SD card wear.
     ```bash
     echo "CONF_SWAPSIZE=100" | sudo tee /etc/dphys-swapfile # Sets swap back to 100MB (default)
@@ -197,15 +204,15 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
 
 ### 5. Code Setup
 
-1.  **Download/Copy Code Files:** Ensure you are in your project directory (`~/NinjaRobot`). Place the following Python files into this directory:
+1.  **Download/Copy Code Files:** Ensure you are in your project directory (`~/NinjaRobot`). Place the following Python files into this directory. You can typically download these from the project's GitHub repository.
     *   `Ninja_Movements_v1.py`
     *   `Ninja_Buzzer.py`
     *   `Ninja_Distance.py`
     *   `ninja_core.py`
     *   `Ninja_Voice_Control.py`
     *   `web_interface.py`
-    *   `DFRobot_RaspberryPi_Expansion_Board.py` (If you are using the DFRobot RaspberryPi Expansion HAT for Zero, otherwise this might be specific to your HAT or handled by `RPi.GPIO` directly if using PCA9685-based HATs, which would require `adafruit-circuitpython-pca9685` and `adafruit-circuitpython-servokit` instead of direct `RPi.GPIO` for servos on HAT).
-        *Assume for this tutorial, `DFRobot_RaspberryPi_Expansion_Board.py` is a custom library provided by DFRobot for their specific HAT to simplify servo/PWM control via RPi.GPIO.*
+    *   `DFRobot_RaspberryPi_Expansion_Board.py`
+        *   **Note:** `DFRobot_RaspberryPi_Expansion_Board.py` is likely a custom library file provided by DFRobot or the project maintainer for this specific HAT. It should be placed directly in your project folder and is **not** installed via `pip`. If your HAT is a generic PCA9685-based board, you might need different libraries like `adafruit-circuitpython-pca9685` and `adafruit-circuitpython-servokit`.
 
 2.  **Create `templates` Directory:** Inside the project directory (`~/NinjaRobot`):
     ```bash
@@ -272,14 +279,15 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
 
 ### 9. Troubleshooting
 
-*   **Python Errors (`NameError`, `ImportError`):** Ensure all libraries from step 4.9 are installed in the active virtual environment (`.venv`). Check file locations within `~/NinjaRobot`.
-*   **`pydantic-core` build error / Rust related:** Ensure Rust was installed correctly (step 4.6) and that swap was active during `pip install` (step 4.7). If it persists, check `rustc --version`. You may need to clean pip's cache (`pip cache purge`) and try installing `pydantic-core` by itself (`pip install pydantic-core`) with more swap.
-*   **Out of Memory / SIGKILL:** This is likely due to insufficient swap during compilation. Ensure step 4.7 (Configure Swap Space) was done correctly before `pip install`. Try with even more swap (e.g., 2GB if your SD card allows).
+*   **`ModuleNotFoundError: No module named 'smbus'`:** Ensure I2C is enabled (step 4.5) and `python3-smbus` was installed (step 4.6).
+*   **Python Errors (`NameError`, `ImportError`):** Ensure all libraries from step 4.10 are installed in the active virtual environment (`.venv`). Check file locations within `~/NinjaRobot` (especially for `DFRobot_RaspberryPi_Expansion_Board.py` as per step 5.1).
+*   **`pydantic-core` build error / Rust related:** Ensure Rust was installed correctly (step 4.7) and that swap was active during `pip install` (step 4.8). If it persists, check `rustc --version`. You may need to clean pip's cache (`pip cache purge`) and try installing `pydantic-core` by itself (`pip install pydantic-core`) with more swap.
+*   **Out of Memory / SIGKILL:** This is likely due to insufficient swap during compilation (steps 4.8 and 4.10). Ensure swap was configured correctly. Try with even more swap (e.g., 2GB if your SD card allows).
 *   **Hardware/Core Init Failures:** Review hardware connections (Step 3). Check `web_interface.py` console output for errors during startup.
 *   **"Robot Mic" Fails to Start:** Examine `web_interface.py` console output. Look for errors from `subprocess.Popen` or Python errors from `Ninja_Voice_Control.py` (often audio device issues like incorrect I2S setup). Verify I2S setup (Step 4.4). Use `arecord -l` and `aplay -l` to check if the soundcard is detected.
 *   **Voice Recognition Issues:** Check mic connections. Tune sensitivity (Step 6.2 for Robot Mic). Ensure browser mic permission (Browser Mic). Check internet connection (both).
 *   **Gemini Errors:** Verify API Key (Step 6.1). Check Google Cloud project status (API enabled?).
-*   **Robot Movement Issues:** Verify servo connections (Step 3.2). Check angles in `Ninja_Movements_v1.py`. Ensure adequate power supply. If using a generic PCA9685 servo HAT, ensure the `DFRobot_RaspberryPi_Expansion_Board.py` is appropriate or replaced with Adafruit CircuitPython libraries.
+*   **Robot Movement Issues:** Verify servo connections (Step 3.2). Check angles in `Ninja_Movements_v1.py`. Ensure adequate power supply.
 *   **Web Interface Unresponsive:** Ensure Flask server (`web_interface.py`) is running on the Pi. Check Pi's IP address and network connection. Check browser console for JavaScript errors.
 
 ### 10. Stopping the Application
@@ -304,7 +312,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
 *   **Raspberry Pi Zero:** WiFi/Bluetooth内蔵のWまたはWHモデル推奨。
 *   **Micro SDカード:** 16GB以上推奨（セットアップ時のスワップ使用のため）、Class 10、Raspberry Pi OS書き込み済み。
 *   **電源:** 安定した5V、2.5A以上のmicro USB電源。**コンパイル中の安定性のために非常に重要です！**
-*   **DFRobot IO Expansion HAT:** Raspberry Pi Zero GPIOレイアウト互換のもの。
+*   **DFRobot IO Expansion HAT for raspberry pi zero:** Raspberry Pi Zero GPIOレイアウト互換のもの。
 *   **INMP441 I2S マイクモジュール:** オンボード音声入力用。
 *   **HC-SR04 超音波距離センサー:** 障害物検出用。
 *   **アクティブブザーモジュール:** 音声フィードバック用。
@@ -354,7 +362,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
 
 1.  **OSのインストール:** Raspberry Pi ImagerでRaspberry Pi OS (LiteまたはDesktop、Pi Zeroの互換性とパフォーマンスのため**32-bit推奨**) をSDカードに書き込みます。詳細オプション(⚙️)でホスト名、SSH有効化、ユーザー/パスワード、WiFiを設定します。
 2.  **初回起動と接続:** SDカードを挿入し電源接続。数分待って起動後、SSHで接続 (`ssh <ユーザー名>@<ホスト名>.local` または `ssh <ユーザー名>@<IPアドレス>`)。
-3.  **システムアップデートと必須ツール:** OSとパッケージを最新化し、`curl`（Rustに必要）をインストールします：
+3.  **システムアップデートと必須ツール:** OSとパッケージを最新化し、`curl` と `git` をインストールします：
     ```bash
     sudo apt update
     sudo apt full-upgrade -y
@@ -375,24 +383,30 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         dtparam=i2s=on
         dtoverlay=googlevoicehat-soundcard
         ```
-    *   保存 (`Ctrl+X`, `Y`, `Enter`) して再起動：`sudo reboot`
+    *   保存 (`Ctrl+X`, `Y`, `Enter`) して再起動：
+        ```bash
+        sudo reboot
+        ```
     *(再起動後、SSH再接続)*
-
 5.  **I2Cインターフェースの有効化:**
-    *   “Raspi-config”を編集：
+    *   Raspberry Pi設定ツールを使用：
         ```bash
         sudo raspi-config
         ```
-        Interfacing Options > I2C > Yes > OK > Yes
-    reboot: `sudo reboot`
-    *(Reconnect via SSH after reboot)*
+    *   `Interface Options` -> `I2C` へ移動します。
+    *   `<Yes>` を選択してI2Cインターフェースを有効にし、`<Ok>` を選択します。
+    *   再起動を促されたら `<Yes>` を選択します。そうでなければ `raspi-config` を終了し、手動で再起動します：
+        ```bash
+        sudo reboot
+        ```
+    *(再起動後、SSH再接続)*
 
-6.  **コアシステム依存関係のインストール:** Pythonとオーディオ処理に必要なライブラリをインストール：
+6.  **コアシステム依存関係のインストール:** Python、オーディオ処理、I2C通信に必要なライブラリをインストール：
     ```bash
-    sudo apt install -y python3-dev python3-pip python3-venv build-essential libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 ffmpeg flac libatlas-base-dev
+    sudo apt install -y python3-dev python3-pip python3-venv build-essential libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 ffmpeg flac libatlas-base-dev python3-smbus
     ```
 
-8.  **Rustコンパイラのインストール/アップデート:**
+7.  **Rustコンパイラのインストール/アップデート:**
     一部のPythonライブラリ（`google-generativeai`の依存関係である`pydantic-core`など）はRustコンパイラを必要とします。`rustup`を使用して最新バージョンをインストールします。
     **このステップにはかなりの時間がかかります（30分～1時間以上）。**
     ```bash
@@ -414,7 +428,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         ```
         バージョン番号（例：`rustc 1.7X.X ...`）が表示されるはずです。
 
-9.  **スワップ領域の設定 (Pi Zeroでは非常に重要):**
+8.  **スワップ領域の設定 (Pi Zeroでは非常に重要):**
     一部のPythonパッケージ（特にRustコンポーネントを含むもの）のコンパイルはメモリを大量に消費し、Pi Zeroの限られたRAMでは失敗する可能性があります。一時的にスワップ領域を増やします。
     ```bash
     echo "CONF_SWAPSIZE=1024" | sudo tee /etc/dphys-swapfile # スワップを1GBに設定
@@ -427,7 +441,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         free -h
         ```
 
-10.  **プロジェクトディレクトリと仮想環境の作成:**
+9.  **プロジェクトディレクトリと仮想環境の作成:**
     ```bash
     mkdir ~/NinjaRobot # または好きなプロジェクト名
     cd ~/NinjaRobot
@@ -436,18 +450,17 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     ```
     *(ターミナルプロンプトの先頭に `(.venv)` が表示されます)*
 
-11.  **Pythonライブラリのインストール:**
-    Rustとスワップを設定したので、Pythonパッケージをインストールできます。DFRobot IO expansion boardを使いければ、 Imbusをインストールしてください。
+10. **Pythonライブラリのインストール:**
+    Rust、スワップ、およびシステム依存関係を設定したので、Pythonパッケージをインストールできます。
     **このステップもPi Zeroでのコンパイルのため非常に時間がかかります（1～2時間以上かかる可能性があります）。** 辛抱強く待ってください。
     ```bash
     pip install --upgrade pip
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
-    pip install smbus
     ```
-    *   **PyAudioに関する注意:** もし後で `SpeechRecognition` や `google-cloud-speech` がPyAudioについてエラーを出す場合で、ステップ4.5の `apt` パッケージでカバーされていなかった場合は、明示的にインストールする必要があるかもしれません：
-        `pip install pyaudio` （まずステップ4.5のシステム依存関係がインストールされていることを確認してください）。
+    *   **PyAudioに関する注意:** もし後で `SpeechRecognition` や `google-cloud-speech` がPyAudioについてエラーを出す場合で、ステップ4.6の `apt` パッケージでカバーされていなかった場合は、明示的にインストールする必要があるかもしれません：
+        `pip install pyaudio` （まずステップ4.6のシステム依存関係がインストールされていることを確認してください）。
 
-12. **スワップ領域の復元 (任意だが推奨):**
+11. **スワップ領域の復元 (任意だが推奨):**
     集中的なコンパイルが完了したら、SDカードの消耗を減らすためにスワップをより小さなデフォルト値に戻すことができます。
     ```bash
     echo "CONF_SWAPSIZE=100" | sudo tee /etc/dphys-swapfile # スワップを100MB (デフォルト) に戻す
@@ -456,20 +469,18 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     # 変更を完全に適用するため、またはエラーが発生した場合は再起動が必要な場合があります。
     # sudo reboot
     ```
-    
-
 
 ### 5. コードのセットアップ (Code Setup) {#5-コードのセットアップ-code-setup-jp}
 
-1.  **コードファイルのダウンロード/コピー:** プロジェクトディレクトリ (`~/NinjaRobot`) にいることを確認してください。以下のPythonファイルをこのディレクトリに配置します：
+1.  **コードファイルのダウンロード/コピー:** プロジェクトディレクトリ (`~/NinjaRobot`) にいることを確認してください。以下のPythonファイルをこのディレクトリに配置します。通常、これらはプロジェクトのGitHubリポジトリからダウンロードできます。
     *   `Ninja_Movements_v1.py`
     *   `Ninja_Buzzer.py`
     *   `Ninja_Distance.py`
     *   `ninja_core.py`
     *   `Ninja_Voice_Control.py`
     *   `web_interface.py`
-    *   `DFRobot_RaspberryPi_Expansion_Board.py` (DFRobot RaspberryPi Expansion HAT for Zeroを使用している場合。そうでない場合、これはHATに固有であるか、PCA9685ベースのHATを使用している場合は `RPi.GPIO` で直接処理されるかもしれません。その場合、HAT上のサーボには `RPi.GPIO` の代わりに `adafruit-circuitpython-pca9685` と `adafruit-circuitpython-servokit` が必要になります。)
-        *このチュートリアルでは、`DFRobot_RaspberryPi_Expansion_Board.py` は、DFRobotが特定のHAT用にRPi.GPIOを介したサーボ/PWM制御を簡略化するために提供するカスタムライブラリであると仮定します。*
+    *   `DFRobot_RaspberryPi_Expansion_Board.py`
+        *   **注意:** `DFRobot_RaspberryPi_Expansion_Board.py` は、DFRobotまたはプロジェクトメンテナーがこの特定のHAT用に提供するカスタムライブラリファイルである可能性が高いです。プロジェクトフォルダに直接配置する必要があり、`pip`経由ではインストール**されません**。HATが汎用的なPCA9685ベースのボードである場合は、`adafruit-circuitpython-pca9685`や`adafruit-circuitpython-servokit`のような異なるライブラリが必要になる場合があります。
 
 2.  **`templates` ディレクトリの作成:** プロジェクトディレクトリ内 (`~/NinjaRobot`)：
     ```bash
@@ -534,14 +545,15 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
 
 ### 9. トラブルシューティング (Troubleshooting) {#9-トラブルシューティング-troubleshooting-jp}
 
-*   **Pythonエラー (`NameError`, `ImportError`):** ライブラリ（ステップ4.9）が有効な仮想環境 (`.venv`) にインストールされているか確認。`~/NinjaRobot` 内のファイル配置を確認。
-*   **`pydantic-core` のビルドエラー / Rust関連:** Rustが正しくインストールされたか（ステップ4.6）、`pip install` 中にスワップが有効だったか（ステップ4.7）を確認。問題が続く場合は `rustc --version` を確認。pipのキャッシュをクリア (`pip cache purge`) し、より多くのスワップで `pydantic-core` 単体をインストール (`pip install pydantic-core`) してみる必要があるかもしれません。
-*   **メモリ不足 / SIGKILL:** コンパイル中のスワップ不足が原因である可能性が高いです。`pip install` 前にステップ4.7（スワップ領域の設定）が正しく行われたか確認してください。さらに多くのスワップ（SDカードが許せば2GBなど）で試してみてください。
+*   **`ModuleNotFoundError: No module named 'smbus'`:** I2Cが有効になっているか（ステップ4.5）、`python3-smbus`がインストールされているか（ステップ4.6）を確認してください。
+*   **Pythonエラー (`NameError`, `ImportError`):** ライブラリ（ステップ4.10）が有効な仮想環境 (`.venv`) にインストールされているか確認。`~/NinjaRobot` 内のファイル配置（特にステップ5.1に従った `DFRobot_RaspberryPi_Expansion_Board.py`）を確認。
+*   **`pydantic-core` のビルドエラー / Rust関連:** Rustが正しくインストールされたか（ステップ4.7）、`pip install` 中にスワップが有効だったか（ステップ4.8）を確認。問題が続く場合は `rustc --version` を確認。pipのキャッシュをクリア (`pip cache purge`) し、より多くのスワップで `pydantic-core` 単体をインストール (`pip install pydantic-core`) してみる必要があるかもしれません。
+*   **メモリ不足 / SIGKILL:** コンパイル中のスワップ不足が原因である可能性が高いです（ステップ4.8および4.10）。スワップが正しく設定されているか確認してください。さらに多くのスワップ（SDカードが許せば2GBなど）で試してみてください。
 *   **ハードウェア初期化失敗:** ハードウェア接続（ステップ3）を再確認。`web_interface.py` 起動時のコンソール出力でエラー詳細を確認。
 *   **"Robot Mic" 起動失敗:** `web_interface.py` のコンソール出力を確認。`subprocess.Popen` のエラーや `Ninja_Voice_Control.py` からのPythonエラー（I2S設定の誤りなど、オーディオデバイス関連の問題が多い）を探します。I2S設定（ステップ4.4）を再確認。`arecord -l` と `aplay -l` を使用してサウンドカードが検出されているか確認します。
 *   **音声認識問題:** マイク接続確認。感度調整（ステップ6.2 Robot Mic）。ブラウザマイク許可（Browser Mic）。インターネット接続確認（両方）。
 *   **Geminiエラー:** APIキー確認（ステップ6.1）。Google Cloud プロジェクトステータス確認（API有効か？）。
-*   **ロボット動作問題:** サーボ接続確認（ステップ3.2）。`Ninja_Movements_v1.py` の角度定義確認。電源供給確認。汎用PCA9685サーボHATを使用している場合、`DFRobot_RaspberryPi_Expansion_Board.py` が適切か、Adafruit CircuitPythonライブラリに置き換えられているか確認。
+*   **ロボット動作問題:** サーボ接続確認（ステップ3.2）。`Ninja_Movements_v1.py` の角度定義確認。電源供給確認。
 *   **Web UI無応答:** Flaskサーバー(`web_interface.py`)がPiで実行中か確認。IPアドレスとネットワーク接続確認。ブラウザコンソールでJavaScriptエラー確認。
 
 ### 10. アプリケーションの停止 (Stopping the Application) {#10-アプリケーションの停止-stopping-the-application-jp}

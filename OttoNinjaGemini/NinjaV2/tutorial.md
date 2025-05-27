@@ -173,7 +173,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     ```bash
     pip install --upgrade pip
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
-　　 pip install smbus
+    pip install smbus
     ```
     *   **Note on PyAudio:** If `SpeechRecognition` or `google-cloud-speech` later complains about PyAudio, and the `apt` packages in step 4.5 didn't cover it, you might need to install it explicitly:
         `pip install pyaudio` (ensure system dependencies from 4.5 are installed first).

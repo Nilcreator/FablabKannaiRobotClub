@@ -115,15 +115,22 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         dtparam=i2s=on
         dtoverlay=googlevoicehat-soundcard
         ```
-    *   Save (`Ctrl+X`, `Y`, `Enter`) and reboot: `sudo reboot`
+    *   Save (`Ctrl+X`, `Y`, `Enter`) 
+5.  **Enable I2C Interface:**
+    *   Using “Raspi-config” on Command Line
+        ```bash
+        sudo raspi-config
+        ```
+        Interfacing Options > I2C > Yes > OK > Yes
+    reboot: `sudo reboot`
     *(Reconnect via SSH after reboot)*
 
-5.  **Install Core System Dependencies:** Install libraries needed for Python and audio processing:
+7.  **Install Core System Dependencies:** Install libraries needed for Python and audio processing:
     ```bash
     sudo apt install -y python3-dev python3-pip python3-venv build-essential libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 ffmpeg flac libatlas-base-dev
     ```
 
-6.  **Install/Update Rust Compiler:**
+8.  **Install/Update Rust Compiler:**
     Some Python libraries (like `pydantic-core`, a dependency for `google-generativeai`) require a Rust compiler. We'll use `rustup` to install the latest version.
     **This step will take a considerable amount of time (30 mins to 1+ hour).**
     ```bash
@@ -145,7 +152,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         ```
         You should see version numbers (e.g., `rustc 1.7X.X ...`).
 
-7.  **Configure Swap Space (Crucial for Pi Zero):**
+9.  **Configure Swap Space (Crucial for Pi Zero):**
     Compiling some Python packages (especially those with Rust components) is memory-intensive and can fail on the Pi Zero's limited RAM. We'll temporarily increase swap space.
     ```bash
     echo "CONF_SWAPSIZE=1024" | sudo tee /etc/dphys-swapfile # Sets swap to 1GB
@@ -158,7 +165,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         free -h
         ```
 
-8.  **Create Project Directory & Virtual Environment:**
+10.  **Create Project Directory & Virtual Environment:**
     ```bash
     mkdir ~/NinjaRobot # Or your preferred project name
     cd ~/NinjaRobot
@@ -167,7 +174,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     ```
     *(Your terminal prompt should now start with `(.venv)`)*
 
-9.  **Install Python Libraries:**
+11.  **Install Python Libraries:**
     With Rust and swap configured, we can now install the Python packages. Install smbus for DFRobot IO Expansion board.
     **This step will also take a very long time (potentially 1-2+ hours) due to compilation on the Pi Zero.** Be patient.
     ```bash
@@ -178,7 +185,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     *   **Note on PyAudio:** If `SpeechRecognition` or `google-cloud-speech` later complains about PyAudio, and the `apt` packages in step 4.5 didn't cover it, you might need to install it explicitly:
         `pip install pyaudio` (ensure system dependencies from 4.5 are installed first).
 
-10. **Revert Swap Space (Optional but Recommended):**
+12. **Revert Swap Space (Optional but Recommended):**
     After the intensive compilation is done, you can revert swap to a smaller default to reduce SD card wear.
     ```bash
     echo "CONF_SWAPSIZE=100" | sudo tee /etc/dphys-swapfile # Sets swap back to 100MB (default)
@@ -371,12 +378,21 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     *   保存 (`Ctrl+X`, `Y`, `Enter`) して再起動：`sudo reboot`
     *(再起動後、SSH再接続)*
 
-5.  **コアシステム依存関係のインストール:** Pythonとオーディオ処理に必要なライブラリをインストール：
+5.  **I2Cインターフェースの有効化:**
+    *   “Raspi-config”を編集：
+        ```bash
+        sudo raspi-config
+        ```
+        Interfacing Options > I2C > Yes > OK > Yes
+    reboot: `sudo reboot`
+    *(Reconnect via SSH after reboot)*
+
+6.  **コアシステム依存関係のインストール:** Pythonとオーディオ処理に必要なライブラリをインストール：
     ```bash
     sudo apt install -y python3-dev python3-pip python3-venv build-essential libasound2-dev portaudio19-dev libportaudio2 libportaudiocpp0 ffmpeg flac libatlas-base-dev
     ```
 
-6.  **Rustコンパイラのインストール/アップデート:**
+8.  **Rustコンパイラのインストール/アップデート:**
     一部のPythonライブラリ（`google-generativeai`の依存関係である`pydantic-core`など）はRustコンパイラを必要とします。`rustup`を使用して最新バージョンをインストールします。
     **このステップにはかなりの時間がかかります（30分～1時間以上）。**
     ```bash
@@ -398,7 +414,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         ```
         バージョン番号（例：`rustc 1.7X.X ...`）が表示されるはずです。
 
-7.  **スワップ領域の設定 (Pi Zeroでは非常に重要):**
+9.  **スワップ領域の設定 (Pi Zeroでは非常に重要):**
     一部のPythonパッケージ（特にRustコンポーネントを含むもの）のコンパイルはメモリを大量に消費し、Pi Zeroの限られたRAMでは失敗する可能性があります。一時的にスワップ領域を増やします。
     ```bash
     echo "CONF_SWAPSIZE=1024" | sudo tee /etc/dphys-swapfile # スワップを1GBに設定
@@ -411,7 +427,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         free -h
         ```
 
-8.  **プロジェクトディレクトリと仮想環境の作成:**
+10.  **プロジェクトディレクトリと仮想環境の作成:**
     ```bash
     mkdir ~/NinjaRobot # または好きなプロジェクト名
     cd ~/NinjaRobot
@@ -420,7 +436,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     ```
     *(ターミナルプロンプトの先頭に `(.venv)` が表示されます)*
 
-9.  **Pythonライブラリのインストール:**
+11.  **Pythonライブラリのインストール:**
     Rustとスワップを設定したので、Pythonパッケージをインストールできます。DFRobot IO expansion boardを使いければ、 Imbusをインストールしてください。
     **このステップもPi Zeroでのコンパイルのため非常に時間がかかります（1～2時間以上かかる可能性があります）。** 辛抱強く待ってください。
     ```bash
@@ -431,7 +447,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     *   **PyAudioに関する注意:** もし後で `SpeechRecognition` や `google-cloud-speech` がPyAudioについてエラーを出す場合で、ステップ4.5の `apt` パッケージでカバーされていなかった場合は、明示的にインストールする必要があるかもしれません：
         `pip install pyaudio` （まずステップ4.5のシステム依存関係がインストールされていることを確認してください）。
 
-10. **スワップ領域の復元 (任意だが推奨):**
+12. **スワップ領域の復元 (任意だが推奨):**
     集中的なコンパイルが完了したら、SDカードの消耗を減らすためにスワップをより小さなデフォルト値に戻すことができます。
     ```bash
     echo "CONF_SWAPSIZE=100" | sudo tee /etc/dphys-swapfile # スワップを100MB (デフォルト) に戻す
@@ -440,6 +456,8 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     # 変更を完全に適用するため、またはエラーが発生した場合は再起動が必要な場合があります。
     # sudo reboot
     ```
+    
+
 
 ### 5. コードのセットアップ (Code Setup) {#5-コードのセットアップ-code-setup-jp}
 

@@ -94,6 +94,16 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
 
 1.  **Install OS:** Use Raspberry Pi Imager to flash Raspberry Pi OS (Lite or Desktop, **32-bit recommended** for Pi Zero compatibility and performance) onto the SD card. Use the advanced options (⚙️ icon) to pre-configure hostname, enable SSH, set user/password, and configure WiFi.
 2.  **First Boot & Connect:** Insert SD card, connect power. Wait a few minutes for the first boot. Connect via SSH from your computer (`ssh your_username@your_pi_hostname.local` or `ssh your_username@<PI_IP_ADDRESS>`).
+If you meet error message of "IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!" 連線問題：  
+option1: 
+sudo nano /Users/nilcreator/.ssh/known_hosts clear SSH history
+  
+option2: 
+ssh-keygen -R ip #delete previous ip
+  
+option3: sudo nano /Users/nilcreator/.ssh/known_hosts
+#delete previous KEY
+
 3.  **System Update & Essential Tools:** Bring the OS and packages up to date and install `curl` and `git`:
     ```bash
     sudo apt update

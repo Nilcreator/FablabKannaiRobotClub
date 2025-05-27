@@ -44,7 +44,7 @@ This project creates an interactive robot controllable via natural language comm
 *   **Raspberry Pi Zero:** W or WH model recommended for built-in WiFi/Bluetooth.
 *   **Micro SD Card:** 16GB+ recommended (due to swap usage during setup), Class 10, flashed with Raspberry Pi OS.
 *   **Power Supply:** Stable 5V, >= 2.5A micro USB power supply. **Crucial for stability during compilation!**
-*   **DFRobot IO Expansion HAT for raspberry pi zero:** Compatible with Raspberry Pi Zero GPIO layout.
+*   **DFRobot IO Expansion HAT for Raspberry Pi Zero:** Compatible with Raspberry Pi Zero GPIO layout.
 *   **INMP441 I2S Microphone Module:** For onboard voice input.
 *   **HC-SR04 Ultrasonic Distance Sensor:** For obstacle detection.
 *   **Active Buzzer Module:** For audio feedback sounds.
@@ -93,16 +93,19 @@ This project creates an interactive robot controllable via natural language comm
 This section involves steps that can take a **very long time** on a Raspberry Pi Zero, especially installing Rust and Python packages. Ensure a stable power supply and be patient.
 
 1.  **Install OS:** Use Raspberry Pi Imager to flash Raspberry Pi OS (Lite or Desktop, **32-bit recommended** for Pi Zero compatibility and performance) onto the SD card. Use the advanced options (⚙️ icon) to pre-configure hostname, enable SSH, set user/password, and configure WiFi.
-2.  **First Boot & Connect:** Insert SD card, connect power. Wait a few minutes for the first boot. Connect via SSH from your computer (`ssh your_username@your_pi_hostname.local` or `ssh your_username@<PI_IP_ADDRESS>`).
-If you meet error message of "IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!" 連線問題：  
-option1: 
-sudo nano /Users/nilcreator/.ssh/known_hosts clear SSH history
-  
-option2: 
-ssh-keygen -R ip #delete previous ip
-  
-option3: sudo nano /Users/nilcreator/.ssh/known_hosts
-#delete previous KEY
+
+2.  **First Boot & Connect:**
+    Insert SD card, connect power. Wait a few minutes for the first boot. Connect via SSH from your computer (`ssh your_username@your_pi_hostname.local` or `ssh your_username@<PI_IP_ADDRESS>`).
+
+    *   **SSH Connection Issue Troubleshooting (Man-in-the-middle warning):**
+        If you encounter an error like "IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!" or "REMOTE HOST IDENTIFICATION HAS CHANGED", it usually means the Pi's SSH key has changed (e.g., after an OS reinstall) and your computer remembers the old one.
+        *   **Option 1 (Recommended for specific IP):** Remove the old key for the specific IP address from your `known_hosts` file. On your computer (not the Pi), run:
+            ```bash
+            ssh-keygen -R <PI_IP_ADDRESS>
+            # Example: ssh-keygen -R 192.168.1.101
+            ```
+        *   **Option 2 (Manual Edit - Advanced):** Manually edit your `known_hosts` file. On your computer, open the file (path depends on your OS, typically `~/.ssh/known_hosts` for Linux/macOS, or `%USERPROFILE%\.ssh\known_hosts` on Windows). Find and delete the line corresponding to your Pi's IP address or hostname.
+        *   After resolving, try connecting via SSH again.
 
 3.  **System Update & Essential Tools:** Bring the OS and packages up to date and install `curl` and `git`:
     ```bash
@@ -112,7 +115,8 @@ option3: sudo nano /Users/nilcreator/.ssh/known_hosts
     sudo reboot
     ```
     *(Reconnect via SSH after reboot)*
-4.  **Enable I2S Interface:**
+
+4.  **Enable I2S Interface (for Microphone):**
     *   Edit the boot configuration file:
         ```bash
         sudo nano /boot/firmware/config.txt # For newer Pi OS (Bookworm onwards)
@@ -130,7 +134,8 @@ option3: sudo nano /Users/nilcreator/.ssh/known_hosts
         sudo reboot
         ```
     *(Reconnect via SSH after reboot)*
-5.  **Enable I2C Interface:**
+
+5.  **Enable I2C Interface (for HAT Communication):**
     *   Use the Raspberry Pi Configuration tool:
         ```bash
         sudo raspi-config
@@ -174,7 +179,8 @@ option3: sudo nano /Users/nilcreator/.ssh/known_hosts
     Compiling some Python packages (especially those with Rust components) is memory-intensive and can fail on the Pi Zero's limited RAM. We'll temporarily increase swap space.
     ```bash
     echo "CONF_SWAPSIZE=1024" | sudo tee /etc/dphys-swapfile # Sets swap to 1GB
-    # For 2GB swap, use: echo "CONF_SWAPSIZE=2048" | sudo tee /etc/dphys-swapfile
+    # For 2GB swap (if your SD card is large enough and you encounter issues with 1GB):
+    # echo "CONF_SWAPSIZE=2048" | sudo tee /etc/dphys-swapfile
     sudo dphys-swapfile setup
     sudo dphys-swapfile swapon
     ```
@@ -222,7 +228,7 @@ option3: sudo nano /Users/nilcreator/.ssh/known_hosts
     *   `Ninja_Voice_Control.py`
     *   `web_interface.py`
     *   `DFRobot_RaspberryPi_Expansion_Board.py`
-        *   **Note:** `DFRobot_RaspberryPi_Expansion_Board.py` is likely a custom library file provided by DFRobot or the project maintainer for this specific HAT. It should be placed directly in your project folder and is **not** installed via `pip`. If your HAT is a generic PCA9685-based board, you might need different libraries like `adafruit-circuitpython-pca9685` and `adafruit-circuitpython-servokit`.
+        *   **Important Note:** `DFRobot_RaspberryPi_Expansion_Board.py` is a local library file specific to this DFRobot HAT. Ensure this file is downloaded from the project repository and placed directly in your `~/NinjaRobot/` project folder. It is **not** installed via `pip`. If you are using a different HAT (e.g., a generic PCA9685-based board), you will need different libraries and code adjustments (e.g., using `adafruit-circuitpython-pca9685` and `adafruit-circuitpython-servokit`).
 
 2.  **Create `templates` Directory:** Inside the project directory (`~/NinjaRobot`):
     ```bash
@@ -290,10 +296,11 @@ option3: sudo nano /Users/nilcreator/.ssh/known_hosts
 ### 9. Troubleshooting
 
 *   **`ModuleNotFoundError: No module named 'smbus'`:** Ensure I2C is enabled (step 4.5) and `python3-smbus` was installed (step 4.6).
-*   **Python Errors (`NameError`, `ImportError`):** Ensure all libraries from step 4.10 are installed in the active virtual environment (`.venv`). Check file locations within `~/NinjaRobot` (especially for `DFRobot_RaspberryPi_Expansion_Board.py` as per step 5.1).
+*   **`ImportError: DFRobot_RaspberryPi_Expansion_Board` or similar:** Ensure the `DFRobot_RaspberryPi_Expansion_Board.py` file is in your `~/NinjaRobot` directory (see step 5.1 note).
+*   **Other Python Errors (`NameError`, `ImportError`):** Ensure all libraries from step 4.10 are installed in the active virtual environment (`.venv`). Check file locations within `~/NinjaRobot`.
 *   **`pydantic-core` build error / Rust related:** Ensure Rust was installed correctly (step 4.7) and that swap was active during `pip install` (step 4.8). If it persists, check `rustc --version`. You may need to clean pip's cache (`pip cache purge`) and try installing `pydantic-core` by itself (`pip install pydantic-core`) with more swap.
 *   **Out of Memory / SIGKILL:** This is likely due to insufficient swap during compilation (steps 4.8 and 4.10). Ensure swap was configured correctly. Try with even more swap (e.g., 2GB if your SD card allows).
-*   **Hardware/Core Init Failures:** Review hardware connections (Step 3). Check `web_interface.py` console output for errors during startup.
+*   **Hardware/Core Init Failures:** Review hardware connections (Step 3). Check `web_interface.py` console output for errors during startup (e.g., I2C address issues for the HAT).
 *   **"Robot Mic" Fails to Start:** Examine `web_interface.py` console output. Look for errors from `subprocess.Popen` or Python errors from `Ninja_Voice_Control.py` (often audio device issues like incorrect I2S setup). Verify I2S setup (Step 4.4). Use `arecord -l` and `aplay -l` to check if the soundcard is detected.
 *   **Voice Recognition Issues:** Check mic connections. Tune sensitivity (Step 6.2 for Robot Mic). Ensure browser mic permission (Browser Mic). Check internet connection (both).
 *   **Gemini Errors:** Verify API Key (Step 6.1). Check Google Cloud project status (API enabled?).
@@ -322,7 +329,7 @@ option3: sudo nano /Users/nilcreator/.ssh/known_hosts
 *   **Raspberry Pi Zero:** WiFi/Bluetooth内蔵のWまたはWHモデル推奨。
 *   **Micro SDカード:** 16GB以上推奨（セットアップ時のスワップ使用のため）、Class 10、Raspberry Pi OS書き込み済み。
 *   **電源:** 安定した5V、2.5A以上のmicro USB電源。**コンパイル中の安定性のために非常に重要です！**
-*   **DFRobot IO Expansion HAT for raspberry pi zero:** Raspberry Pi Zero GPIOレイアウト互換のもの。
+*   **DFRobot IO Expansion HAT for Raspberry Pi Zero:** Raspberry Pi Zero GPIOレイアウト互換のもの。
 *   **INMP441 I2S マイクモジュール:** オンボード音声入力用。
 *   **HC-SR04 超音波距離センサー:** 障害物検出用。
 *   **アクティブブザーモジュール:** 音声フィードバック用。
@@ -371,7 +378,20 @@ option3: sudo nano /Users/nilcreator/.ssh/known_hosts
 このセクションには、Raspberry Pi Zeroでは**非常に時間のかかる**手順が含まれています（特にRustのインストールとPythonパッケージのインストール）。安定した電源を確保し、辛抱強く作業してください。
 
 1.  **OSのインストール:** Raspberry Pi ImagerでRaspberry Pi OS (LiteまたはDesktop、Pi Zeroの互換性とパフォーマンスのため**32-bit推奨**) をSDカードに書き込みます。詳細オプション(⚙️)でホスト名、SSH有効化、ユーザー/パスワード、WiFiを設定します。
-2.  **初回起動と接続:** SDカードを挿入し電源接続。数分待って起動後、SSHで接続 (`ssh <ユーザー名>@<ホスト名>.local` または `ssh <ユーザー名>@<IPアドレス>`)。
+
+2.  **初回起動と接続:**
+    SDカードを挿入し電源接続。数分待って起動後、SSHで接続 (`ssh <ユーザー名>@<ホスト名>.local` または `ssh <ユーザー名>@<IPアドレス>`)。
+
+    *   **SSH接続問題のトラブルシューティング (中間者攻撃の警告):**
+        「IT IS POSSIBLE THAT SOMEONE IS DOING SOMETHING NASTY!」や「REMOTE HOST IDENTIFICATION HAS CHANGED」のようなエラーが表示された場合、通常はPiのSSHキーが変更された（例：OS再インストール後など）が、お使いのコンピュータが古いキーを記憶していることが原因です。
+        *   **オプション1 (特定のIPアドレスに推奨):** お使いのコンピュータ（Piではありません）で、`known_hosts` ファイルから特定のIPアドレスの古いキーを削除します。
+            ```bash
+            ssh-keygen -R <PiのIPアドレス>
+            # 例: ssh-keygen -R 192.168.1.101
+            ```
+        *   **オプション2 (手動編集 - 上級者向け):** お使いのコンピュータで `known_hosts` ファイルを手動で編集します。ファイルを開き（OSによってパスは異なりますが、Linux/macOSでは通常 `~/.ssh/known_hosts`、Windowsでは `%USERPROFILE%\.ssh\known_hosts`）、PiのIPアドレスまたはホスト名に対応する行を見つけて削除します。
+        *   解決後、再度SSHで接続してみてください。
+
 3.  **システムアップデートと必須ツール:** OSとパッケージを最新化し、`curl` と `git` をインストールします：
     ```bash
     sudo apt update
@@ -380,7 +400,8 @@ option3: sudo nano /Users/nilcreator/.ssh/known_hosts
     sudo reboot
     ```
     *(再起動後、SSH再接続)*
-4.  **I2Sインターフェースの有効化:**
+
+4.  **I2Sインターフェースの有効化 (マイク用):**
     *   ブート設定ファイルを編集：
         ```bash
         sudo nano /boot/firmware/config.txt # 新しいPi OS (Bookworm以降) の場合
@@ -398,14 +419,15 @@ option3: sudo nano /Users/nilcreator/.ssh/known_hosts
         sudo reboot
         ```
     *(再起動後、SSH再接続)*
-5.  **I2Cインターフェースの有効化:**
-    *   Raspberry Pi設定ツールを使用：
+
+5.  **I2Cインターフェースの有効化 (HAT通信用):**
+    *   Raspberry Pi 設定ツールを使用：
         ```bash
         sudo raspi-config
         ```
-    *   `Interface Options` -> `I2C` へ移動します。
+    *   `Interface Options` -> `I2C` に移動します。
     *   `<Yes>` を選択してI2Cインターフェースを有効にし、`<Ok>` を選択します。
-    *   再起動を促されたら `<Yes>` を選択します。そうでなければ `raspi-config` を終了し、手動で再起動します：
+    *   再起動を促されたら `<Yes>` を選択します。そうでない場合は `raspi-config` を終了し、手動で再起動します：
         ```bash
         sudo reboot
         ```
@@ -442,7 +464,8 @@ option3: sudo nano /Users/nilcreator/.ssh/known_hosts
     一部のPythonパッケージ（特にRustコンポーネントを含むもの）のコンパイルはメモリを大量に消費し、Pi Zeroの限られたRAMでは失敗する可能性があります。一時的にスワップ領域を増やします。
     ```bash
     echo "CONF_SWAPSIZE=1024" | sudo tee /etc/dphys-swapfile # スワップを1GBに設定
-    # 2GBスワップの場合は: echo "CONF_SWAPSIZE=2048" | sudo tee /etc/dphys-swapfile
+    # 2GBスワップの場合 (SDカードの容量が十分で、1GBで問題が発生する場合):
+    # echo "CONF_SWAPSIZE=2048" | sudo tee /etc/dphys-swapfile
     sudo dphys-swapfile setup
     sudo dphys-swapfile swapon
     ```
@@ -490,7 +513,7 @@ option3: sudo nano /Users/nilcreator/.ssh/known_hosts
     *   `Ninja_Voice_Control.py`
     *   `web_interface.py`
     *   `DFRobot_RaspberryPi_Expansion_Board.py`
-        *   **注意:** `DFRobot_RaspberryPi_Expansion_Board.py` は、DFRobotまたはプロジェクトメンテナーがこの特定のHAT用に提供するカスタムライブラリファイルである可能性が高いです。プロジェクトフォルダに直接配置する必要があり、`pip`経由ではインストール**されません**。HATが汎用的なPCA9685ベースのボードである場合は、`adafruit-circuitpython-pca9685`や`adafruit-circuitpython-servokit`のような異なるライブラリが必要になる場合があります。
+        *   **重要事項:** `DFRobot_RaspberryPi_Expansion_Board.py` は、このDFRobot HATに固有のローカルライブラリファイルです。このファイルがプロジェクトリポジトリからダウンロードされ、`~/NinjaRobot/` プロジェクトフォルダに直接配置されていることを確認してください。これは `pip` ではインストールされません。異なるHAT（例：汎用のPCA9685ベースのボード）を使用している場合は、異なるライブラリとコードの調整が必要になります（例：`adafruit-circuitpython-pca9685` および `adafruit-circuitpython-servokit` の使用）。
 
 2.  **`templates` ディレクトリの作成:** プロジェクトディレクトリ内 (`~/NinjaRobot`)：
     ```bash
@@ -555,11 +578,12 @@ option3: sudo nano /Users/nilcreator/.ssh/known_hosts
 
 ### 9. トラブルシューティング (Troubleshooting) {#9-トラブルシューティング-troubleshooting-jp}
 
-*   **`ModuleNotFoundError: No module named 'smbus'`:** I2Cが有効になっているか（ステップ4.5）、`python3-smbus`がインストールされているか（ステップ4.6）を確認してください。
-*   **Pythonエラー (`NameError`, `ImportError`):** ライブラリ（ステップ4.10）が有効な仮想環境 (`.venv`) にインストールされているか確認。`~/NinjaRobot` 内のファイル配置（特にステップ5.1に従った `DFRobot_RaspberryPi_Expansion_Board.py`）を確認。
+*   **`ModuleNotFoundError: No module named 'smbus'`:** I2Cが有効になっているか（ステップ4.5）、`python3-smbus` がインストールされているか（ステップ4.6）を確認してください。
+*   **`ImportError: DFRobot_RaspberryPi_Expansion_Board` など:** `DFRobot_RaspberryPi_Expansion_Board.py` ファイルが `~/NinjaRobot` ディレクトリにあるか確認してください（ステップ5.1の注意参照）。
+*   **その他のPythonエラー (`NameError`, `ImportError`):** ステップ4.10のすべてのライブラリが有効な仮想環境 (`.venv`) にインストールされているか確認してください。`~/NinjaRobot` 内のファイル配置を確認してください。
 *   **`pydantic-core` のビルドエラー / Rust関連:** Rustが正しくインストールされたか（ステップ4.7）、`pip install` 中にスワップが有効だったか（ステップ4.8）を確認。問題が続く場合は `rustc --version` を確認。pipのキャッシュをクリア (`pip cache purge`) し、より多くのスワップで `pydantic-core` 単体をインストール (`pip install pydantic-core`) してみる必要があるかもしれません。
 *   **メモリ不足 / SIGKILL:** コンパイル中のスワップ不足が原因である可能性が高いです（ステップ4.8および4.10）。スワップが正しく設定されているか確認してください。さらに多くのスワップ（SDカードが許せば2GBなど）で試してみてください。
-*   **ハードウェア初期化失敗:** ハードウェア接続（ステップ3）を再確認。`web_interface.py` 起動時のコンソール出力でエラー詳細を確認。
+*   **ハードウェア/コア初期化失敗:** ハードウェア接続（ステップ3）を再確認。`web_interface.py` 起動時のコンソール出力でエラー詳細を確認（例：HATのI2Cアドレスの問題）。
 *   **"Robot Mic" 起動失敗:** `web_interface.py` のコンソール出力を確認。`subprocess.Popen` のエラーや `Ninja_Voice_Control.py` からのPythonエラー（I2S設定の誤りなど、オーディオデバイス関連の問題が多い）を探します。I2S設定（ステップ4.4）を再確認。`arecord -l` と `aplay -l` を使用してサウンドカードが検出されているか確認します。
 *   **音声認識問題:** マイク接続確認。感度調整（ステップ6.2 Robot Mic）。ブラウザマイク許可（Browser Mic）。インターネット接続確認（両方）。
 *   **Geminiエラー:** APIキー確認（ステップ6.1）。Google Cloud プロジェクトステータス確認（API有効か？）。

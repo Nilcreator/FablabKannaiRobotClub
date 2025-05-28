@@ -13,6 +13,7 @@ This tutorial guides you through building and programming a voice-controlled rob
     *   [2. Hardware Requirements](#2-hardware-requirements)
     *   [3. Hardware Assembly](#3-hardware-assembly)
     *   [4. Software Setup on Raspberry Pi](#4-software-setup-on-raspberry-pi)
+    *   [4.A. How to Get a Google Gemini API Key](#4a-how-to-get-a-google-gemini-api-key)
     *   [5. Code Setup](#5-code-setup)
     *   [6. Configuration](#6-configuration)
     *   [7. Running the Application](#7-running-the-application)
@@ -24,6 +25,7 @@ This tutorial guides you through building and programming a voice-controlled rob
     *   [2. 必要なハードウェア (Hardware Requirements)](#2-必要なハードウェア-hardware-requirements-jp)
     *   [3. ハードウェアの組み立て (Hardware Assembly)](#3-ハードウェアの組み立て-hardware-assembly-jp)
     *   [4. Raspberry Pi のソフトウェアセットアップ (Software Setup on Raspberry Pi)](#4-raspberry-pi-のソフトウェアセットアップ-software-setup-on-raspberry-pi-jp)
+    *   [4.A. Google Gemini APIキーの取得方法 (How to Get a Google Gemini API Key)](#4a-google-gemini-apiキーの取得方法-how-to-get-a-google-gemini-api-key-jp)
     *   [5. コードのセットアップ (Code Setup)](#5-コードのセットアップ-code-setup-jp)
     *   [6. 設定 (Configuration)](#6-設定-configuration-jp)
     *   [7. アプリケーションの実行 (Running the Application)](#7-アプリケーションの実行-running-the-application-jp)
@@ -198,11 +200,13 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     ```
     *(Your terminal prompt should now start with `(.venv)`)*
 
-10. **Install Python Libraries:**
+10. **Install Python Libraries (including `smbus2` for DFRobot HAT):**
     With Rust, swap, and system dependencies configured, we can now install the Python packages.
-    **This step will also take a very long time (potentially 1-2+ hours) due to compilation on the Pi Zero.** Be patient.
+    `smbus2` is a Python module used for I2C communication, often required by HAT libraries like the DFRobot one.
+    **This entire step will take a very long time (potentially 1-2+ hours) due to compilation on the Pi Zero.** Be patient.
     ```bash
     pip install --upgrade pip
+    pip install smbus2 # For I2C communication, important for DFRobot HAT
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *   **Note on PyAudio:** If `SpeechRecognition` or `google-cloud-speech` later complains about PyAudio, and the `apt` packages in step 4.6 didn't cover it, you might need to install it explicitly:
@@ -217,6 +221,31 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     # You might need to reboot for changes to fully apply or if errors occur.
     # sudo reboot
     ```
+
+### 4.A. How to Get a Google Gemini API Key
+
+To use Google Gemini for natural language processing, you'll need an API key. The easiest way for personal projects is through Google AI Studio.
+
+1.  **Go to Google AI Studio:**
+    Open your web browser and navigate to [https://aistudio.google.com/](https://aistudio.google.com/).
+2.  **Sign In:**
+    Sign in with your Google account.
+3.  **Agree to Terms:**
+    You may need to agree to the terms of service if it's your first time.
+4.  **Get API Key:**
+    *   Once in AI Studio, look for a button or link that says **"Get API key"** (often on the left sidebar or a prominent button).
+    *   Click on it. You might be taken to a new page or a dialog will appear.
+5.  **Create API Key in a New Project:**
+    *   You'll likely be prompted to **"Create API key in new project"** or associate it with an existing Google Cloud project. For simplicity, creating one in a new project via AI Studio is straightforward for this tutorial.
+    *   Click the button to create the key.
+6.  **Copy Your API Key:**
+    Your new API key will be displayed. It's a long string of letters and numbers.
+    *   **Copy this key immediately and save it somewhere secure and private.** You will need it for the robot's configuration (Step 6.1).
+    *   **Treat this key like a password.** Do not share it publicly or commit it to public code repositories.
+7.  **Done:**
+    You now have a Gemini API key. The free tier is usually generous enough for development and personal use, but be aware of usage limits. For more extensive use or production applications, you'd manage billing through Google Cloud Platform.
+
+    *You will use this API key in the "Configuration" section (Step 6.1) of this tutorial.*
 
 ### 5. Code Setup
 
@@ -246,8 +275,8 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         ```
     *   Edit the core logic file: `nano ninja_core.py`
     *   Locate the line: `GOOGLE_API_KEY = "YOUR_GOOGLE_API_KEY"`
-    *   Replace `"YOUR_GOOGLE_API_KEY"` with your actual key from Google AI Studio or Google Cloud.
-    *   **IMPORTANT:** Keep your API key secure. Do not share it publicly. For production, consider environment variables.
+    *   Replace `"YOUR_GOOGLE_API_KEY"` with the actual key you obtained in **Step 4.A**.
+    *   **IMPORTANT:** Keep your API key secure. Do not share it publicly.
     *   Save the file (`Ctrl+X`, `Y`, `Enter`).
 2.  **(Optional) Robot Mic Sensitivity Tuning:**
     *   If the "Robot Mic" mode has trouble hearing you or triggers on noise, edit `Ninja_Voice_Control.py`.
@@ -295,7 +324,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
 
 ### 9. Troubleshooting
 
-*   **`ModuleNotFoundError: No module named 'smbus'`:** Ensure I2C is enabled (step 4.5) and `python3-smbus` was installed (step 4.6).
+*   **`ModuleNotFoundError: No module named 'smbus'` or `'smbus2'`:** Ensure I2C is enabled (step 4.5), `python3-smbus` was installed via `apt` (step 4.6), AND `smbus2` was installed via `pip` in your virtual environment (step 4.10).
 *   **`ImportError: DFRobot_RaspberryPi_Expansion_Board` or similar:** Ensure the `DFRobot_RaspberryPi_Expansion_Board.py` file is in your `~/NinjaRobot` directory (see step 5.1 note).
 *   **Other Python Errors (`NameError`, `ImportError`):** Ensure all libraries from step 4.10 are installed in the active virtual environment (`.venv`). Check file locations within `~/NinjaRobot`.
 *   **`pydantic-core` build error / Rust related:** Ensure Rust was installed correctly (step 4.7) and that swap was active during `pip install` (step 4.8). If it persists, check `rustc --version`. You may need to clean pip's cache (`pip cache purge`) and try installing `pydantic-core` by itself (`pip install pydantic-core`) with more swap.
@@ -303,7 +332,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
 *   **Hardware/Core Init Failures:** Review hardware connections (Step 3). Check `web_interface.py` console output for errors during startup (e.g., I2C address issues for the HAT).
 *   **"Robot Mic" Fails to Start:** Examine `web_interface.py` console output. Look for errors from `subprocess.Popen` or Python errors from `Ninja_Voice_Control.py` (often audio device issues like incorrect I2S setup). Verify I2S setup (Step 4.4). Use `arecord -l` and `aplay -l` to check if the soundcard is detected.
 *   **Voice Recognition Issues:** Check mic connections. Tune sensitivity (Step 6.2 for Robot Mic). Ensure browser mic permission (Browser Mic). Check internet connection (both).
-*   **Gemini Errors:** Verify API Key (Step 6.1). Check Google Cloud project status (API enabled?).
+*   **Gemini Errors:** Verify API Key (Step 4.A and 6.1). Check Google Cloud project status (API enabled?).
 *   **Robot Movement Issues:** Verify servo connections (Step 3.2). Check angles in `Ninja_Movements_v1.py`. Ensure adequate power supply.
 *   **Web Interface Unresponsive:** Ensure Flask server (`web_interface.py`) is running on the Pi. Check Pi's IP address and network connection. Check browser console for JavaScript errors.
 
@@ -483,11 +512,13 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     ```
     *(ターミナルプロンプトの先頭に `(.venv)` が表示されます)*
 
-10. **Pythonライブラリのインストール:**
+10. **Pythonライブラリのインストール (DFRobot HAT用の `smbus2` を含む):**
     Rust、スワップ、およびシステム依存関係を設定したので、Pythonパッケージをインストールできます。
-    **このステップもPi Zeroでのコンパイルのため非常に時間がかかります（1～2時間以上かかる可能性があります）。** 辛抱強く待ってください。
+    `smbus2` はI2C通信に使用されるPythonモジュールで、DFRobotのようなHATライブラリでしばしば必要とされます。
+    **このステップ全体はPi Zeroでのコンパイルのため非常に時間がかかります（1～2時間以上かかる可能性があります）。** 辛抱強く待ってください。
     ```bash
     pip install --upgrade pip
+    pip install smbus2 # I2C通信用、DFRobot HATに重要
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *   **PyAudioに関する注意:** もし後で `SpeechRecognition` や `google-cloud-speech` がPyAudioについてエラーを出す場合で、ステップ4.6の `apt` パッケージでカバーされていなかった場合は、明示的にインストールする必要があるかもしれません：
@@ -502,6 +533,31 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     # 変更を完全に適用するため、またはエラーが発生した場合は再起動が必要な場合があります。
     # sudo reboot
     ```
+
+### 4.A. Google Gemini APIキーの取得方法 (How to Get a Google Gemini API Key) {#4a-google-gemini-apiキーの取得方法-how-to-get-a-google-gemini-api-key-jp}
+
+自然言語処理にGoogle Geminiを使用するには、APIキーが必要です。個人プロジェクトで最も簡単な方法は、Google AI Studio経由です。
+
+1.  **Google AI Studioへ移動:**
+    ウェブブラウザを開き、[https://aistudio.google.com/](https://aistudio.google.com/) にアクセスします。
+2.  **サインイン:**
+    お使いのGoogleアカウントでサインインします。
+3.  **利用規約に同意:**
+    初めて利用する場合は、利用規約への同意が必要になることがあります。
+4.  **APIキーの取得:**
+    *   AI Studioに入ったら、「**APIキーを取得**」（多くは左側のサイドバーまたは目立つボタンにあります）というボタンまたはリンクを探します。
+    *   それをクリックします。新しいページに移動するか、ダイアログが表示される場合があります。
+5.  **新しいプロジェクトでAPIキーを作成:**
+    *   おそらく、「**新しいプロジェクトでAPIキーを作成**」するか、既存のGoogle Cloudプロジェクトに関連付けるよう求められます。このチュートリアルでは、AI Studio経由で新しいプロジェクトで作成するのが簡単です。
+    *   ボタンをクリックしてキーを作成します。
+6.  **APIキーをコピー:**
+    新しいAPIキーが表示されます。これは長い文字列です。
+    *   **このキーをすぐにコピーし、安全でプライベートな場所に保存してください。** ロボットの設定（ステップ6.1）で必要になります。
+    *   **このキーはパスワードのように扱ってください。** 公開したり、公開コードリポジトリにコミットしたりしないでください。
+7.  **完了:**
+    これでGemini APIキーを取得できました。無料枠は通常、開発や個人利用には十分ですが、使用制限に注意してください。より広範な使用や本番アプリケーションの場合は、Google Cloud Platformを通じて請求を管理します。
+
+    *このAPIキーは、本チュートリアルの「設定」(ステップ6.1)セクションで使用します。*
 
 ### 5. コードのセットアップ (Code Setup) {#5-コードのセットアップ-code-setup-jp}
 
@@ -531,8 +587,8 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         ```
     *   コアロジックファイルを編集：`nano ninja_core.py`
     *   `GOOGLE_API_KEY = "YOUR_GOOGLE_API_KEY"` の行を探します。
-    *   `"YOUR_GOOGLE_API_KEY"` を実際のキー（Google AI StudioまたはGoogle Cloudから取得）に置き換えます。
-    *   **重要:** APIキーは安全に保管し、公開しないでください。本番環境では環境変数などを検討してください。
+    *   `"YOUR_GOOGLE_API_KEY"` を**ステップ4.A**で取得した実際のキーに置き換えます。
+    *   **重要:** APIキーは安全に保管し、公開しないでください。
     *   ファイルを保存 (`Ctrl+X`, `Y`, `Enter`)。
 2.  **(オプション) Robot Mic 感度調整:**
     *   「Robot Mic」モードの認識が悪い場合、`Ninja_Voice_Control.py` の `recognizer.energy_threshold` を調整します。
@@ -578,7 +634,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
 
 ### 9. トラブルシューティング (Troubleshooting) {#9-トラブルシューティング-troubleshooting-jp}
 
-*   **`ModuleNotFoundError: No module named 'smbus'`:** I2Cが有効になっているか（ステップ4.5）、`python3-smbus` がインストールされているか（ステップ4.6）を確認してください。
+*   **`ModuleNotFoundError: No module named 'smbus'` または `'smbus2'`:** I2Cが有効になっているか（ステップ4.5）、`python3-smbus` が `apt` でインストールされているか（ステップ4.6）、かつ `smbus2` が仮想環境に `pip` でインストールされているか（ステップ4.10）を確認してください。
 *   **`ImportError: DFRobot_RaspberryPi_Expansion_Board` など:** `DFRobot_RaspberryPi_Expansion_Board.py` ファイルが `~/NinjaRobot` ディレクトリにあるか確認してください（ステップ5.1の注意参照）。
 *   **その他のPythonエラー (`NameError`, `ImportError`):** ステップ4.10のすべてのライブラリが有効な仮想環境 (`.venv`) にインストールされているか確認してください。`~/NinjaRobot` 内のファイル配置を確認してください。
 *   **`pydantic-core` のビルドエラー / Rust関連:** Rustが正しくインストールされたか（ステップ4.7）、`pip install` 中にスワップが有効だったか（ステップ4.8）を確認。問題が続く場合は `rustc --version` を確認。pipのキャッシュをクリア (`pip cache purge`) し、より多くのスワップで `pydantic-core` 単体をインストール (`pip install pydantic-core`) してみる必要があるかもしれません。
@@ -586,7 +642,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
 *   **ハードウェア/コア初期化失敗:** ハードウェア接続（ステップ3）を再確認。`web_interface.py` 起動時のコンソール出力でエラー詳細を確認（例：HATのI2Cアドレスの問題）。
 *   **"Robot Mic" 起動失敗:** `web_interface.py` のコンソール出力を確認。`subprocess.Popen` のエラーや `Ninja_Voice_Control.py` からのPythonエラー（I2S設定の誤りなど、オーディオデバイス関連の問題が多い）を探します。I2S設定（ステップ4.4）を再確認。`arecord -l` と `aplay -l` を使用してサウンドカードが検出されているか確認します。
 *   **音声認識問題:** マイク接続確認。感度調整（ステップ6.2 Robot Mic）。ブラウザマイク許可（Browser Mic）。インターネット接続確認（両方）。
-*   **Geminiエラー:** APIキー確認（ステップ6.1）。Google Cloud プロジェクトステータス確認（API有効か？）。
+*   **Geminiエラー:** APIキー確認（ステップ4.Aおよび6.1）。Google Cloud プロジェクトステータス確認（API有効か？）。
 *   **ロボット動作問題:** サーボ接続確認（ステップ3.2）。`Ninja_Movements_v1.py` の角度定義確認。電源供給確認。
 *   **Web UI無応答:** Flaskサーバー(`web_interface.py`)がPiで実行中か確認。IPアドレスとネットワーク接続確認。ブラウザコンソールでJavaScriptエラー確認。
 

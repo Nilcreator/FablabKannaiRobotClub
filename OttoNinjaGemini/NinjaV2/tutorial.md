@@ -206,7 +206,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     **This entire step will take a very long time (potentially 1-2+ hours) due to compilation on the Pi Zero.** Be patient.
     ```bash
     pip install --upgrade pip
-    pip install smbus2 # For I2C communication, important for DFRobot HAT
+    pip install smbus2 # For I2C communication, important for DFRobot HAT, or try "pip install smbus" if smbus2 is not working
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *   **Note on PyAudio:** If `SpeechRecognition` or `google-cloud-speech` later complains about PyAudio, and the `apt` packages in step 4.6 didn't cover it, you might need to install it explicitly:
@@ -518,7 +518,7 @@ To use Google Gemini for natural language processing, you'll need an API key. Th
     **このステップ全体はPi Zeroでのコンパイルのため非常に時間がかかります（1～2時間以上かかる可能性があります）。** 辛抱強く待ってください。
     ```bash
     pip install --upgrade pip
-    pip install smbus2 # I2C通信用、DFRobot HATに重要
+    pip install smbus2 # I2C通信用、DFRobot HATに重要,  もしsmbus2が問題があれば "pip install smbus" で試してください
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *   **PyAudioに関する注意:** もし後で `SpeechRecognition` や `google-cloud-speech` がPyAudioについてエラーを出す場合で、ステップ4.6の `apt` パッケージでカバーされていなかった場合は、明示的にインストールする必要があるかもしれません：

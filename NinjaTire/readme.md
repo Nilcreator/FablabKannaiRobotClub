@@ -207,7 +207,7 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     **This entire step will take a very long time (potentially 1-2+ hours) due to compilation on the Pi Zero.** Be patient.
     ```bash
     pip install --upgrade pip
-    pip install smbus2 # For I2C communication, important for DFRobot HAT. Try smbus if smbus2 does not work
+    pip install smbus smbus2 # For I2C communication, important for DFRobot HAT. Try smbus if smbus2 does not work
     pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *   **Note on PyAudio:** If `SpeechRecognition` or `google-cloud-speech` later complains about PyAudio, and the `apt` packages in step 4.6 didn't cover it, you might need to install it explicitly:

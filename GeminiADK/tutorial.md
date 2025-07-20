@@ -1,78 +1,74 @@
-# Quickstart: Gemini ADK & Weather Bot on Raspberry Pi
+# Gemini on Raspberry Pi: Installation & Quickstart
 
-This guide provides a complete tutorial for installing the necessary tools and building your first weather chatbot agent on a Raspberry Pi. It covers both the C++ Gemini ADK for compiled applications and the Python SDK for scripting.
+This tutorial is divided into three sessions. The first session covers the one-time installation of all necessary tools for both C++ and Python. The following sessions guide you through creating a weather chatbot agent in each language.
 
 **Table of Contents**
-1. [Part 1: The C++ Weather Agent](#part-1-the-c-weather-agent-)
-    * [Step 1.1: Install C++ Dependencies](#step-11-install-c-dependencies-)
-    * [Step 1.2: Clone and Build the Gemini ADK](#step-12-clone-and-build-the-gemini-adk-)
-    * [Step 1.3: Create the C++ Weather Agent Code](#step-13-create-the-c-weather-agent-code-)
-    * [Step 1.4: Compile and Run the C++ Agent](#step-14-compile-and-run-the-c-agent-)
-2. [Part 2: The Python Weather Agent](#part-2-the-python-weather-agent-)
-    * [Step 2.1: Install the Python SDK](#step-21-install-the-python-sdk-)
-    * [Step 2.2: Create the Python Weather Agent Script](#step-22-create-the-python-weather-agent-script-)
-    * [Step 2.3: Run the Python Agent](#step-23-run-the-python-agent-)
+1. [Session 1: Install Gemini ADK & SDKs](#session-1-install-gemini-adk--sdks-)
+    * [C++ Environment Setup](#c-environment-setup)
+    * [Python Environment Setup](#python-environment-setup)
+2. [Session 2: C++ Weather Agent Quick Start](#session-2-c-weather-agent-quick-start-)
+    * [Step 2.1: Create the C++ Source Code](#step-21-create-the-c-source-code)
+    * [Step 2.2: Update the Build System](#step-22-update-the-build-system)
+    * [Step 2.3: Compile and Run the C++ Agent](#step-23-compile-and-run-the-c-agent)
+3. [Session 3: Python Weather Agent Quick Start](#session-3-python-weather-agent-quick-start-)
+    * [Step 3.1: Create the Python Script](#step-31-create-the-python-script)
+    * [Step 3.2: Set API Key and Run the Python Agent](#step-32-set-api-key-and-run-the-python-agent)
 
 ---
 
-## Part 1: The C++ Weather Agent ⚙️
+## Session 1: Install Gemini ADK & SDKs ⚙️
 
-This section covers building the C++ library from source and creating a compiled chatbot application.
+This session covers the one-time setup required for both C++ and Python development on your Raspberry Pi.
 
-### Step 1.1: Install C++ Dependencies
+### C++ Environment Setup
 
-First, install the tools required to build C++ projects on your Raspberry Pi.
+1.  **Install Build Tools:** Install the C++ compiler (`g++`), the CMake build system, and Git.
+    ```bash
+    sudo apt update
+    sudo apt install build-essential cmake git
+    ```
 
-```bash
-sudo apt update
-sudo apt install build-essential cmake git
-````
-
-  * `build-essential`: Includes the C++ compiler (`g++`).
-  * `cmake`: The build system used by the ADK.
-  * `git`: For downloading the source code.
-
------
-
-### Step 1.2: Clone and Build the Gemini ADK
-
-Download the ADK source code and compile it.
-
-1.  **Clone the repository:** The `--recurse-submodules` flag is critical as it downloads necessary third-party libraries.
-
+2.  **Clone and Build the ADK:** Download the Gemini C++ ADK source code and compile the core library. The `--recurse-submodules` flag is essential.
     ```bash
     git clone --recurse-submodules [https://github.com/google/gemini-adk.git](https://github.com/google/gemini-adk.git)
     cd gemini-adk
-    ```
-
-2.  **Create a build directory:** This is standard practice to keep the source code clean.
-
-    ```bash
     mkdir build && cd build
-    ```
-
-3.  **Compile the ADK:** This command prepares and builds the entire library. It may take several minutes.
-
-    ```bash
     cmake ..
     cmake --build . -j $(nproc)
     ```
+    This completes the C++ setup. The `~/gemini-adk/` directory is now ready for your C++ projects.
+
+### Python Environment Setup
+
+Install the official Google Gemini SDK for Python using `pip`.
+```bash
+pip install -q -U google-generativeai
+````
+
+This completes the Python setup.
 
 -----
 
-### Step 1.3: Create the C++ Weather Agent Code
+## Session 2: C++ Weather Agent Quick Start 🚀
 
-Now, you'll create a new C++ file for the chatbot and tell the build system about it.
+This session assumes you have completed Session 1. You'll now build a C++ application using the ADK you compiled.
 
-1.  **Create the C++ file:**
+### Step 2.1: Create the C++ Source Code
+
+1.  Navigate to the `examples` directory:
 
     ```bash
     cd ~/gemini-adk/examples
+    ```
+
+2.  Create a new directory and C++ file for your agent:
+
+    ```bash
     mkdir weather_agent
     nano weather_agent/weather_agent.cc
     ```
 
-2.  **Paste the following code** into the `nano` editor. It defines a hardcoded weather function and tells the Gemini model how to call it.
+3.  Paste the following code into the editor. This code defines a "tool" that the Gemini model can call.
 
     ```cpp
     #include <iostream>
@@ -120,13 +116,17 @@ Now, you'll create a new C++ file for the chatbot and tell the build system abou
 
     Save and exit (`Ctrl+X`, `Y`, `Enter`).
 
-3.  **Update the build system:** Open the build script to add your new program.
+### Step 2.2: Update the Build System
+
+Tell CMake how to build your new agent.
+
+1.  Open `CMakeLists.txt` for editing:
 
     ```bash
     nano ~/gemini-adk/examples/CMakeLists.txt
     ```
 
-    Scroll to the bottom and **add these two lines**:
+2.  Scroll to the bottom and **add these two lines**:
 
     ```cmake
     add_executable(weather_agent weather_agent/weather_agent.cc)
@@ -135,13 +135,11 @@ Now, you'll create a new C++ file for the chatbot and tell the build system abou
 
     Save and exit.
 
------
+### Step 2.3: Compile and Run the C++ Agent
 
-### Step 1.4: Compile and Run the C++ Agent
+Compile your specific program and run it.
 
-Finally, compile your new agent and run it.
-
-1.  **Compile the agent:** Navigate back to the `build` directory and run the build command, specifying your new target.
+1.  Navigate to the `build` directory and run the build commands:
 
     ```bash
     cd ~/gemini-adk/build
@@ -149,41 +147,31 @@ Finally, compile your new agent and run it.
     cmake --build . --target weather_agent -j $(nproc)
     ```
 
-2.  **Run the chatbot:** You must provide your API key as an argument. Get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
+2.  Run the agent, providing your API key from [Google AI Studio](https://aistudio.google.com/app/apikey) as an argument:
 
     ```bash
     ./examples/weather_agent/weather_agent --api_key <YOUR_API_KEY>
     ```
 
-    Ask it, "What's the weather in Tokyo?" to see it work.
+    Ask it, "What is the weather in Tokyo?" to test.
 
 -----
 
-## Part 2: The Python Weather Agent 🐍
+## Session 3: Python Weather Agent Quick Start 🐍
 
-This section covers creating the same chatbot using the much simpler Python SDK.
+This session assumes you have completed Session 1. You'll now create a Python script that uses the Gemini SDK.
 
-### Step 2.1: Install the Python SDK
+### Step 3.1: Create the Python Script
 
-Install the official Google Gemini library for Python using `pip`.
+Create a single Python file for the chatbot. You can place this file in your home directory or anywhere you like.
 
-```bash
-pip install -q -U google-generativeai
-```
-
------
-
-### Step 2.2: Create the Python Weather Agent Script
-
-Create a single Python file containing all the logic.
-
-1.  **Create the Python file:**
+1.  Create the Python file:
 
     ```bash
-    nano weather_agent.py
+    nano ~/weather_agent.py
     ```
 
-2.  **Paste the following code** into the editor. It defines a weather function and uses the SDK's automatic function calling feature.
+2.  Paste the following code into the editor:
 
     ```python
     import os
@@ -203,7 +191,6 @@ Create a single Python file containing all the logic.
                 return
             genai.configure(api_key=api_key)
 
-            # Define the model and automatically create a tool from our Python function
             model = genai.GenerativeModel(
                 model_name='gemini-1.5-flash',
                 tools=[get_current_weather]
@@ -230,25 +217,23 @@ Create a single Python file containing all the logic.
 
     Save and exit (`Ctrl+X`, `Y`, `Enter`).
 
------
+### Step 3.2: Set API Key and Run the Python Agent
 
-### Step 2.3: Run the Python Agent
+The script requires an API key set as an environment variable.
 
-The Python script requires the API key to be set as an environment variable.
-
-1.  **Set your API key:** In your terminal, run this command, pasting your key in place of `<YOUR_API_KEY>`.
+1.  Set the environment variable in your terminal. Get a key from [Google AI Studio](https://aistudio.google.com/app/apikey).
 
     ```bash
     export GEMINI_API_KEY='<YOUR_API_KEY>'
     ```
 
-2.  **Run the script:**
+2.  Run the Python script from your home directory:
 
     ```bash
-    python weather_agent.py
+    python ~/weather_agent.py
     ```
 
-    Ask it, "What is the weather like in London?" to test it.
+    Ask it, "What is the weather like in London?" to test.
 
 <!-- end list -->
 

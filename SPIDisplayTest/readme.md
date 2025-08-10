@@ -601,7 +601,8 @@ class RobotController:
     that can be easily used by the Gemini AI's function calling feature.
     """
     def __init__(self):
-        self.board = DFRobot_Expansion_Board(1, 0x10) # Select I2C bus 1, board address 0x10
+        #self.board = DFRobot_Expansion_Board(1, 0x10) # Select I2C bus 1, board address 0x10
+        self.board = DFRobot_Expansion_Board(1) 
         self.board.begin()
         self.board.set_pwm_enable()
         self.board.set_pwm_frequency(1000) # Set PWM frequency to 1kHz

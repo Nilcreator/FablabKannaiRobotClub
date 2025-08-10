@@ -171,7 +171,10 @@ Execute the following command to install all dependencies:
 ```bash
 pip install -U RPi.GPIO google-generativeai google-api-python-client Pillow numpy spidev smbus2
 ```
-
+* Install smbus instead, if smbus2 doesn't work. 
+```bash
+pip install smbus
+```
 Table 2 provides a breakdown of these libraries and their purpose.
 
 **Table 2: Required Python Libraries and Installation Commands**
@@ -787,10 +790,14 @@ class GeminiAssistant:
             service = build("customsearch", "v1", developerKey=api_key)
             res = service.cse().list(q=query, cx=cse_id, num=3).execute()
             
-            if 'items' not in res or not res['items']:
+            # IMPORTANT: Check if the API call failed and returned None
+            if res is None:
+                return "Search failed: The API call returned no result. Check API key and CSE ID."
+
+            if 'items' not in res:
                 return "No search results found."
 
-            snippets =
+            snippets = []
             for item in res['items']:
                 snippets.append(f"Title: {item['title']}\nSnippet: {item.get('snippet', 'No snippet available.')}\n")
             

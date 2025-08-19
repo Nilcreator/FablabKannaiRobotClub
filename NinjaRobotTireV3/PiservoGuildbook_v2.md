@@ -1,4 +1,4 @@
-### piservo0 user guildbook
+### piservo0 user guidebook
 guildhub link: https://github.com/ytani01/piservo0.git
 
 -----

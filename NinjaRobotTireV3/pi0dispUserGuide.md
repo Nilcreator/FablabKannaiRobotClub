@@ -149,8 +149,8 @@ def main():
 
             text = "Hello, World!"
             textwidth, textheight = 500, 100
-            x = 10
-            y = 10
+            x = (lcd.width - textwidth) // 2
+            y = (lcd.height - textheight) // 2
             draw.text((x, y), text, font=font, fill="white")
 
             # Display the image

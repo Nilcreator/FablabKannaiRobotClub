@@ -133,29 +133,31 @@ from PIL import Image, ImageDraw, ImageFont
 
 def main():
     try:
-        with ST7789V() as lcd:
+        with ST7789V(speed_hz=40000000) as lcd:
             # Create a black image
-            img = Image.new("RGB", (lcd.width, lcd.height), (0,0,0))
+            img = Image.new("RGB", (lcd.width, lcd.height), (0, 0, 0))
             draw = ImageDraw.Draw(img)
-
-            # Draw a red rectangle
-            draw.rectangle((10, 10, lcd.width - 10, 50), fill=(255,255,0), outline=(255,255,255))
 
             # Draw some text
             try:
-                font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 30)
-            except IOError:
+                font = ImageFont.truetype("DejaVuSans-Bold.ttf", 24)
+            except:
                 font = ImageFont.load_default()
+            draw.text((10, 10), "Hello World!", font=font, fill=(255, 255, 0))
 
-            text = "Hello, World!"
-            #textwidth, textheight = draw.textsize(text, font)
-            _, _, textwidth, textheight = draw.textbbox((0, 0), text=text, font=font)
-            x = (lcd.width - textwidth) // 2
-            y = (lcd.height - textheight) // 2
-            draw.text((x, y), text, font=font, fill=(255,255,255))
+            # PILイメージをRGB565のバイト列に変換
+            pixel_data = []
+            for y in range(lcd.height):
+                for x in range(lcd.width):
+                    r, g, b = img.getpixel((x, y))
+                    rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
+                    pixel_data.append(rgb565 >> 8)
+                    pixel_data.append(rgb565 & 0xFF)
+            pixel_bytes = bytearray(pixel_data)
 
-            # Display the image
-            lcd.display(img)
+            # LCDに転送
+            lcd.set_window(0, 0, lcd.width - 1, lcd.height - 1)
+            lcd.write_pixels(pixel_bytes)
 
             time.sleep(5)
 

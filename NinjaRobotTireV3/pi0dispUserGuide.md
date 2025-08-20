@@ -148,7 +148,7 @@ def main():
                 font = ImageFont.load_default()
 
             text = "Hello, World!"
-            draw.text((10, 10), text=text, font=font, fill=(255, 255, 0))
+            draw.text((10, 10), text=text, font=font, fill="white")
 
             # Display the image
             lcd.display(img)

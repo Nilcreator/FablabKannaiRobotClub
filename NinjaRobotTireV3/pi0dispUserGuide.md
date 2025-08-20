@@ -135,11 +135,11 @@ def main():
     try:
         with ST7789V() as lcd:
             # Create a black image
-            img = Image.new("RGB", (lcd.width, lcd.height), "black")
+            img = Image.new("RGB", (lcd.width, lcd.height), (0,0,0))
             draw = ImageDraw.Draw(img)
 
             # Draw a red rectangle
-            draw.rectangle((10, 10, lcd.width - 10, 50), fill="red", outline="white")
+            draw.rectangle((10, 10, lcd.width - 10, 50), fill=(255,255,0), outline=(255,255,255))
 
             # Draw some text
             try:
@@ -152,7 +152,7 @@ def main():
             _, _, textwidth, textheight = draw.textbbox((0, 0), text=text, font=font)
             x = (lcd.width - textwidth) // 2
             y = (lcd.height - textheight) // 2
-            draw.text((x, y), text, font=font, fill="white")
+            draw.text((x, y), text, font=font, fill=(255,255,255))
 
             # Display the image
             lcd.display(img)

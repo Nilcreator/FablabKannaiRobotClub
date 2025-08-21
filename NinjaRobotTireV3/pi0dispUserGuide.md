@@ -75,7 +75,7 @@ pip install pigpio Pillow numpy
 
 最後に、このプロジェクトの主役である`pi0disp`をインストールします。インストールには2つの方法があります。
 
-*   **方法A: PyPIからインストール (推奨)**
+*   **方法A: PyPIからインストール **
     インターネット経由で簡単にインストールできます。
     ```bash
     pip install pi0disp
@@ -244,7 +244,7 @@ pip install pigpio Pillow numpy
 
 Finally, install the main library for this project. There are two common ways to do this.
 
-*   **Option A: Install from PyPI (Recommended)**
+*   **Option A: Install from PyPI **
     This is the easiest method and installs the library directly from the internet.
     ```bash
     pip install pi0disp

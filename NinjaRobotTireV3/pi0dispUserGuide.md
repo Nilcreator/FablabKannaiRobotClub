@@ -85,7 +85,7 @@ pip install pigpio Pillow numpy
 git clone https://github.com/ytani01/pi0disp.git
 ```
 
-### 5.2. `pi0disp`ライブラリのインストール**
+### 5.2. `pi0disp`ライブラリのインストール
 
 最後に、このプロジェクトの主役である`pi0disp`をインストールします。インストールには2つの方法があります。
 
@@ -253,7 +253,7 @@ First, use the `git` command to download all the `pi0disp` files from GitHub.
 git clone https://github.com/ytani01/pi0disp.git
 ```
 
-### 5.2. Install the `pi0disp` library**
+### 5.2. Install the `pi0disp` library
 
 Finally, install the main library for this project. There are two common ways to do this.
 

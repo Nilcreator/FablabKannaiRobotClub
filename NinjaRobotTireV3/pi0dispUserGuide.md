@@ -1,171 +1,333 @@
-# pi0disp User Manual
+### Part 1: Japanese Version (日本語版)
 
-## 1. Introduction
+# pi0disp ユーザーガイド (初心者向け)
 
-`pi0disp` is a Python library for controlling ST7789V-based LCD displays with a Raspberry Pi. It uses the `pigpio` library for fast and reliable SPI communication and GPIO control.
+## 1. はじめに
 
-## 2. Installation
+`pi0disp`は、Raspberry Piを使ってST7789Vというチップを搭載した小型LCDディスプレイを制御するためのPythonライブラリです。このガイドでは、プログラミングやRaspberry Piが初めての方でも、ゼロからLCDアプリケーションを構築できるように、手順を一つずつ丁寧に解説します。
 
-### 2.1. Dependencies
+## 2. 準備するもの (ハードウェア)
 
-Before installing `pi0disp`, you need to install its dependencies.
+まず、プロジェクトに必要な部品を揃えましょう。
 
-**1. pigpio C library and daemon**
+*   **Raspberry Pi 本体**: Raspberry Pi 3, 4, Zero, Zero 2W のいずれか
+*   **ST7789V LCDディスプレイ**: (例: Waveshare 1.3inch LCD Hat, Pimoroni Display HAT Miniなど)
+*   **microSDカード**: 16GB以上を推奨
+*   **Raspberry Pi用電源アダプター**
+*   **その他**: (初期設定用) USBキーボード、マウス、HDMIケーブル、モニター
 
-The `pigpio` C library and daemon must be installed and running.
+## 3. ハードウェアのセットアップ
+
+次に、LCDディスプレイをRaspberry Piに接続します。
+
+*   **HATタイプの場合**: Raspberry PiのGPIOピンヘッダーに、向きを合わせてLCDディスプレイを上からしっかりと差し込みます。
+*   **ブレッドボードタイプの場合**: ジャンパーワイヤーを使って、LCDの各ピンをRaspberry Piの対応するGPIOピンに接続します。接続するピンはLCDの製品仕様書を確認してください。
+
+> **なぜこれが必要なの？**
+> Raspberry PiとLCDディスプレイが物理的に接続されていないと、電気信号を送受信できず、画面に何も表示することができません。HATタイプは接続が簡単なので初心者におすすめです。
+
+## 4. Raspberry Piの初期設定とソフトウェアのインストール
+
+ハードウェアの準備ができたら、次はソフトウェアのセットアップです。
+
+### 4.1. Raspberry Pi OSのインストール
+
+まだOSをインストールしていない場合は、公式サイトの「Raspberry Pi Imager」を使ってmicroSDカードにOSを書き込みます。詳しい手順は[Raspberry Pi公式サイト](https://www.raspberrypi.com/software/)を参照してください。
+
+### 4.2. SPIインターフェースの有効化
+
+`pi0disp`はSPIという通信方式を使ってLCDと高速にデータをやり取りします。標準では無効になっているため、有効化する必要があります。
+
+1.  デスクトップ左上のラズベリーパイアイコンをクリックし、「設定」 > 「Raspberry Pi の設定」を開きます。
+2.  「インターフェイス」タブを選択します。
+3.  リストの中から「SPI」を見つけ、「有効」を選択します。
+4.  「OK」をクリックして設定を保存し、再起動します。
+
+### 4.3. 必要なライブラリのインストール
+
+ターミナル（コマンド入力画面）を開き、以下のコマンドを一行ずつ実行して、`pi0disp`が動作するために必要なソフトウェアをインストールします。
+
+**1. `pigpio` Cライブラリとデーモンのインストール**
+
+`pigpio`はGPIOを高速に制御するための重要なライブラリです。
 
 ```bash
-# Install pigpio
+# システムのパッケージリストを更新
 sudo apt-get update
-sudo apt-get install pigpio
 
-# Start the pigpio daemon
-sudo pigpiod
+# pigpioをインストール
+sudo apt-get install pigpio -y
+
+# Raspberry Pi起動時にpigpioデーモンが自動で起動するように設定
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod
 ```
 
-**2. Python libraries**
+**2. Pythonライブラリのインストール**
 
-The following Python libraries are required:
-
-*   `pigpio`: A Python wrapper for the `pigpio` C library.
-*   `Pillow`: A powerful image processing library.
-*   `numpy` (optional but recommended for better performance): A library for numerical operations.
-
-You can install these with `pip`:
+次に、Pythonから`pigpio`や画像処理を扱うためのライブラリをインストールします。
 
 ```bash
 pip install pigpio Pillow numpy
 ```
 
-### 2.2. Installing pi0disp
+**3. `pi0disp`ライブラリのインストール**
 
-You can install `pi0disp` from PyPI:
+最後に、このプロジェクトの主役である`pi0disp`をインストールします。インストールには2つの方法があります。
+
+*   **方法A: PyPIからインストール (推奨)**
+    インターネット経由で簡単にインストールできます。
+    ```bash
+    pip install pi0disp
+    ```
+
+*   **方法B: ローカルからインストール**
+    もしGitHubからソースコードを直接ダウンロードした場合（例えば、後のステップで使う`git clone`コマンドを実行した後）、そのフォルダ内からインストールできます。
+    ```bash
+    # まず、git cloneでダウンロードしたpi0dispフォルダに移動します
+    # cd pi0disp
+
+    # 次のコマンドでインストールします
+    pip install .
+    ```
+
+> **なぜこれが必要なの？**
+> `SPI`は高速なデータ通信規格です。`pigpio`はRaspberry Piのピンを正確にコントロールする心臓部。`Pillow`と`numpy`は画像を描画したり計算したりするための道具です。これらのソフトウェアを正しくインストールすることで、初めてPythonプログラムからLCDを制御できるようになります。
+
+## 5. サンプルコードの実行
+
+ライブラリに付属しているサンプルコードを実行して、セットアップが正しく完了したか確認しましょう。
+
+### 5.1. サンプルコードのダウンロード
+
+まず、`git`コマンドを使って、GitHubから`pi0disp`の全ファイルをダウンロードします。
 
 ```bash
-pip install pi0disp
+git clone https://github.com/ytani01/pi0disp.git
 ```
 
-Or, if you have the source code, you can install it locally:
+### 5.2. サンプルの実行
+
+ダウンロードしたフォルダに移動し、サンプルプログラムを実行します。
 
 ```bash
-pip install .
+cd pi0disp/examples
+python simple_text.py
 ```
 
-## 3. Usage
+このコマンドを実行すると、LCDに「Hello World!」という文字が表示されるはずです。表示されれば、セットアップは成功です！
 
-### 3.1. Basic Initialization
+## 6. 自分でプログラムを書いてみよう
 
-Here's how to initialize the display:
+最後に、簡単なプログラムを自分で作成してみましょう。
+
+### 6.1. プログラムの作成
+
+Thonny IDE（Raspberry Pi OSにプリインストールされています）などのエディタを開き、以下のコードを入力して `my_display.py` という名前で保存します。
 
 ```python
+# 必要なライブラリをインポート
 from pi0disp import ST7789V
 from PIL import Image, ImageDraw, ImageFont
+import time
+
+# LCDディスプレイを初期化
+with ST7789V() as lcd:
+    # 新しい画像を作成 (黒い背景)
+    # lcd.width と lcd.height で自動的に画面サイズを取得
+    img = Image.new("RGB", (lcd.width, lcd.height), "black")
+
+    # 画像に描画するための準備
+    draw = ImageDraw.Draw(img)
+
+    # 赤色の四角形を描画
+    # (左上のx, y, 右下のx, y)
+    draw.rectangle((10, 10, 100, 50), fill="red")
+
+    # 白色でテキストを描画
+    draw.text((10, 70), "My First App!", fill="white")
+
+    # 作成した画像をディスプレイに表示
+    lcd.display(img)
+
+    # 5秒間表示を維持
+    time.sleep(5)
+
+```
+
+### 6.2. プログラムの実行
+
+ターミナルを開き、保存したファイルを実行します。
+
+```bash
+python my_display.py
+```
+
+LCDに赤い四角形と "My First App!" という文字が表示されれば成功です。これで、あなただけのLCDアプリケーションを作る第一歩を踏み出しました！
+
+***
+
+### Part 2: English Version
+
+# pi0disp User Guide (for Beginners)
+
+## 1. Introduction
+
+`pi0disp` is a Python library for controlling ST7789V-based LCD displays with a Raspberry Pi. This guide will walk you through every step, from hardware setup to writing your first program, making it easy for anyone without prior coding or Raspberry Pi experience to build their own LCD application.
+
+## 2. Required Hardware
+
+First, let's gather the necessary components for this project.
+
+*   **Raspberry Pi**: Any model like Raspberry Pi 3, 4, Zero, or Zero 2W.
+*   **ST7789V LCD Display**: (e.g., Waveshare 1.3inch LCD Hat, Pimoroni Display HAT Mini).
+*   **microSD Card**: 16GB or larger is recommended.
+*   **Power Supply for Raspberry Pi**.
+*   **Peripherals**: (For initial setup) USB Keyboard, Mouse, HDMI Cable, and a Monitor.
+
+## 3. Hardware Setup
+
+Next, connect the LCD display to your Raspberry Pi.
+
+*   **For HATs**: Align the female header of the LCD HAT with the GPIO pins on the Raspberry Pi and press down firmly to connect it.
+*   **For Breadboard Modules**: Use jumper wires to connect the pins on the LCD to the corresponding GPIO pins on the Raspberry Pi. You will need to consult the datasheet for your specific LCD to know the correct pinout.
+
+> **Why is this necessary?**
+> The Raspberry Pi needs a physical connection to the LCD to send electrical signals that control what is shown on the screen. HATs are recommended for beginners as they are simple to plug in and require no wiring.
+
+## 4. Raspberry Pi Initial Setup and Software Installation
+
+With the hardware ready, it's time to set up the software.
+
+### 4.1. Install Raspberry Pi OS
+
+If you haven't already, install the Raspberry Pi Operating System onto your microSD card using the official "Raspberry Pi Imager" tool. You can find detailed instructions on the [official Raspberry Pi website](https://www.raspberrypi.com/software/).
+
+### 4.2. Enable the SPI Interface
+
+The `pi0disp` library uses the SPI communication protocol to send data to the display at high speed. This is disabled by default and must be enabled.
+
+1.  Click the Raspberry Pi icon in the top-left corner, go to "Preferences" > "Raspberry Pi Configuration".
+2.  Navigate to the "Interfaces" tab.
+3.  Find "SPI" in the list and select "Enabled".
+4.  Click "OK" to save and reboot your Raspberry Pi.
+
+### 4.3. Install Required Libraries
+
+Open a Terminal window and run the following commands one by one to install the software `pi0disp` depends on.
+
+**1. Install `pigpio` C library and daemon**
+
+`pigpio` is a critical library for high-speed GPIO control.
+
+```bash
+# Update your system's package list
+sudo apt-get update
+
+# Install pigpio
+sudo apt-get install pigpio -y
+
+# Enable the pigpio daemon to start automatically on boot
+sudo systemctl enable pigpiod
+sudo systemctl start pigpiod
+```
+
+**2. Install Python libraries**
+
+Next, install the Python libraries needed for image processing and interfacing with `pigpio`.
+
+```bash
+pip install pigpio Pillow numpy
+```
+
+**3. Install the `pi0disp` library**
+
+Finally, install the main library for this project. There are two common ways to do this.
+
+*   **Option A: Install from PyPI (Recommended)**
+    This is the easiest method and installs the library directly from the internet.
+    ```bash
+    pip install pi0disp
+    ```
+
+*   **Option B: Install Locally from Source**
+    If you have downloaded the source code directly from GitHub (for example, after running the `git clone` command in the next step), you can install it from the local folder.
+    ```bash
+    # First, navigate into the cloned pi0disp directory
+    # cd pi0disp
+
+    # Then, run the following command to install
+    pip install .
+    ```
+
+> **Why is this necessary?**
+> `SPI` is the high-speed communication channel. `pigpio` is the engine that precisely controls the Raspberry Pi's pins. `Pillow` and `numpy` are the tools used to create and manipulate images. By installing these, you give your Python programs the ability to control the LCD.
+
+## 5. Running the Example Code
+
+Let's run a sample program included with the library to verify that everything is set up correctly.
+
+### 5.1. Download the Example Code
+
+First, use the `git` command to download all the `pi0disp` files from GitHub.
+
+```bash
+git clone https://github.com/ytani01/pi0disp.git
+```
+
+### 5.2. Run the Example
+
+Navigate into the downloaded folder and run the example script.
+
+```bash
+cd pi0disp/examples
+python simple_text.py```
+
+After running this command, your LCD screen should display the text "Hello World!". If it does, your setup is successful!
+
+## 6. Writing Your Own Program
+
+Finally, let's create a simple program from scratch.
+
+### 6.1. Create the Program
+
+Open a code editor like Thonny IDE (which comes pre-installed on Raspberry Pi OS) and type the following code. Save the file as `my_display.py`.
+
+```python
+# Import the necessary libraries
+from pi0disp import ST7789V
+from PIL import Image, ImageDraw, ImageFont
+import time
 
 # Initialize the display
-# The default settings are for a 240x320 display rotated 90 degrees (landscape)
-lcd = ST7789V()
-
-# If your display has different wiring or you want a different rotation,
-# you can specify it in the constructor:
-# lcd = ST7789V(rst_pin=25, dc_pin=24, backlight_pin=23, rotation=180)
-```
-
-The `ST7789V` class can be used with a `with` statement to ensure that the resources are properly released:
-
-```python
 with ST7789V() as lcd:
-    # Your code here
-```
-
-### 3.2. Displaying an Image
-
-The `display()` method takes a Pillow `Image` object and displays it on the screen.
-
-```python
-from pi0disp import ST7789V
-from PIL import Image
-
-with ST7789V() as lcd:
-    # Create a new blue image
-    img = Image.new("RGB", (lcd.width, lcd.height), "blue")
-
-    # Display the image
-    lcd.display(img)
-```
-
-### 3.3. Drawing on the Display
-
-You can use Pillow's `ImageDraw` module to draw shapes and text on the display.
-
-```python
-from pi0disp import ST7789V
-from PIL import Image, ImageDraw, ImageFont
-
-with ST7789V() as lcd:
-    # Create a black image
+    # Create a new image with a black background
+    # lcd.width and lcd.height automatically get the screen size
     img = Image.new("RGB", (lcd.width, lcd.height), "black")
+
+    # Prepare to draw on the image
     draw = ImageDraw.Draw(img)
 
     # Draw a red rectangle
+    # (top-left-x, top-left-y, bottom-right-x, bottom-right-y)
     draw.rectangle((10, 10, 100, 50), fill="red")
 
-    # Draw some text
-    # Make sure to have a font file available
-    try:
-        font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf", 20)
-    except IOError:
-        font = ImageFont.load_default()
+    # Draw text in white
+    draw.text((10, 70), "My First App!", fill="white")
 
-    draw.text((10, 70), "Hello, World!", font=font, fill="white")
-
-    # Display the image
+    # Display the image on the LCD
     lcd.display(img)
+
+    # Keep the display on for 5 seconds
+    time.sleep(5)
 ```
 
-## 4. Example
+### 6.2. Run the Program
 
-Here is a complete example that clears the screen to black, draws a red rectangle, and then displays "Hello, World!".
+Open a Terminal and run the file you just saved.
 
-```python
-import time
-from pi0disp import ST7789V
-from PIL import Image, ImageDraw, ImageFont
-
-def main():
-    try:
-        with ST7789V(speed_hz=40000000) as lcd:
-            # Create a black image
-            img = Image.new("RGB", (lcd.width, lcd.height), (0, 0, 0))
-            draw = ImageDraw.Draw(img)
-
-            # Draw some text
-            try:
-                font = ImageFont.truetype("DejaVuSans-Bold.ttf", 24)
-            except:
-                font = ImageFont.load_default()
-            draw.text((10, 10), "Hello World!", font=font, fill=(255, 255, 0))
-
-            # PILイメージをRGB565のバイト列に変換
-            pixel_data = []
-            for y in range(lcd.height):
-                for x in range(lcd.width):
-                    r, g, b = img.getpixel((x, y))
-                    rgb565 = ((r & 0xF8) << 8) | ((g & 0xFC) << 3) | (b >> 3)
-                    pixel_data.append(rgb565 >> 8)
-                    pixel_data.append(rgb565 & 0xFF)
-            pixel_bytes = bytearray(pixel_data)
-
-            # LCDに転送
-            lcd.set_window(0, 0, lcd.width - 1, lcd.height - 1)
-            lcd.write_pixels(pixel_bytes)
-
-            time.sleep(5)
-
-    except Exception as e:
-        print(f"An error occurred: {e}")
-
-if __name__ == "__main__":
-    main()
+```bash
+python my_display.py
 ```
 
-This should give you a good starting point for using the `pi0disp` library.
+The LCD should now display a red rectangle with the text "My First App!". Congratulations, you've taken the first step toward creating your own custom LCD applications.

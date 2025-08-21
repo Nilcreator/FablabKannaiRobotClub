@@ -70,8 +70,22 @@ sudo systemctl start pigpiod
 ```bash
 pip install pigpio Pillow numpy
 ```
+> **なぜこれが必要なの？**
+> `SPI`は高速なデータ通信規格です。`pigpio`はRaspberry Piのピンを正確にコントロールする心臓部。`Pillow`と`numpy`は画像を描画したり計算したりするための道具です。これらのソフトウェアを正しくインストールすることで、初めてPythonプログラムからLCDを制御できるようになります。
 
-**3. `pi0disp`ライブラリのインストール**
+## 5. サンプルコードの実行
+
+ライブラリに付属しているサンプルコードを実行して、セットアップが正しく完了したか確認しましょう。
+
+### 5.1. サンプルコードのダウンロード
+
+まず、`git`コマンドを使って、GitHubから`pi0disp`の全ファイルをダウンロードします。
+
+```bash
+git clone https://github.com/ytani01/pi0disp.git
+```
+
+### 5.2. `pi0disp`ライブラリのインストール**
 
 最後に、このプロジェクトの主役である`pi0disp`をインストールします。インストールには2つの方法があります。
 
@@ -91,22 +105,7 @@ pip install pigpio Pillow numpy
     pip install .
     ```
 
-> **なぜこれが必要なの？**
-> `SPI`は高速なデータ通信規格です。`pigpio`はRaspberry Piのピンを正確にコントロールする心臓部。`Pillow`と`numpy`は画像を描画したり計算したりするための道具です。これらのソフトウェアを正しくインストールすることで、初めてPythonプログラムからLCDを制御できるようになります。
-
-## 5. サンプルコードの実行
-
-ライブラリに付属しているサンプルコードを実行して、セットアップが正しく完了したか確認しましょう。
-
-### 5.1. サンプルコードのダウンロード
-
-まず、`git`コマンドを使って、GitHubから`pi0disp`の全ファイルをダウンロードします。
-
-```bash
-git clone https://github.com/ytani01/pi0disp.git
-```
-
-### 5.2. サンプルの実行
+### 5.3. サンプルの実行
 
 ダウンロードしたフォルダに移動し、サンプルプログラムを実行します。
 
@@ -239,8 +238,22 @@ Next, install the Python libraries needed for image processing and interfacing w
 ```bash
 pip install pigpio Pillow numpy
 ```
+> **Why is this necessary?**
+> `SPI` is the high-speed communication channel. `pigpio` is the engine that precisely controls the Raspberry Pi's pins. `Pillow` and `numpy` are the tools used to create and manipulate images. By installing these, you give your Python programs the ability to control the LCD.
 
-**3. Install the `pi0disp` library**
+## 5. Running the Example Code
+
+Let's run a sample program included with the library to verify that everything is set up correctly.
+
+### 5.1. Download the Example Code
+
+First, use the `git` command to download all the `pi0disp` files from GitHub.
+
+```bash
+git clone https://github.com/ytani01/pi0disp.git
+```
+
+### 5.2. Install the `pi0disp` library**
 
 Finally, install the main library for this project. There are two common ways to do this.
 
@@ -259,21 +272,6 @@ Finally, install the main library for this project. There are two common ways to
     # Then, run the following command to install
     pip install .
     ```
-
-> **Why is this necessary?**
-> `SPI` is the high-speed communication channel. `pigpio` is the engine that precisely controls the Raspberry Pi's pins. `Pillow` and `numpy` are the tools used to create and manipulate images. By installing these, you give your Python programs the ability to control the LCD.
-
-## 5. Running the Example Code
-
-Let's run a sample program included with the library to verify that everything is set up correctly.
-
-### 5.1. Download the Example Code
-
-First, use the `git` command to download all the `pi0disp` files from GitHub.
-
-```bash
-git clone https://github.com/ytani01/pi0disp.git
-```
 
 ### 5.2. Run the Example
 

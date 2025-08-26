@@ -21,7 +21,32 @@
 次に、LCDディスプレイをRaspberry Piに接続します。
 
 *   **HATタイプの場合**: Raspberry PiのGPIOピンヘッダーに、向きを合わせてLCDディスプレイを上からしっかりと差し込みます。
-*   **ブレッドボードタイプの場合**: ジャンパーワイヤーを使って、LCDの各ピンをRaspberry Piの対応するGPIOピンに接続します。接続するピンはLCDの製品仕様書を確認してください。
+*   **ブレッドボードタイプの場合**: ジャンパーワイヤーを使って、LCDの各ピンをRaspberry Piの対応するGPIOピンに接続します。接続するピンは以下のように参考してください。
+
+2.0 inch waveshare LCD display
+| LCD Pin | Function | Raspberry Pi Pin (BCM) | DFRobot HAT Pin Label | Ninja HAT Pin Label |
+| :--- | :--- | :---: | :--- | :--- |
+| **VCC** | Power (3.3V) | 17 | `3.3V` | `3V` |
+| **GND** | Ground | 20 | `GND` | `GND` |
+| **DIN** | SPI Data In (MOSI) | GPIO 10 | `SPI_MOSI` | `SPI_MOSI` |
+| **CLK** | SPI Clock (SCLK) | GPIO 11 | `SPI_SCLK` | `SPI_SCLK` |
+| **CS** | Chip Select | GPIO 8 | `SPI_SS` |  `SPI_CE0` |
+| **DC** | Data/Command | GPIO 18 | `D18` | `18` |
+| **RST** | Reset | GPIO 19 | `D19` | `19` |
+| **BL** | Backlight | GPIO 20 | `D20` | `20` |
+
+2.4 inch SPI ST7789 LCD display
+| LCD Pin | Function | Raspberry Pi Pin (BCM) | DFRobot HAT Pin Label | Ninja HAT Pin Label |
+| :--- | :--- | :---: | :--- | :--- |
+| **GND** | Ground | 20 | `GND` | `GND` |
+| **VCC** | Power (3.3V) | 17 | `3.3V` | `3V` |
+| **SCL** | SPI Clock (SCLK) | GPIO 11 | `SPI_SCLK` | `SPI_SCLK` |
+| **SDA** | SPI Data In (MOSI) | GPIO 10 | `SPI_MOSI` | `SPI_MOSI` |
+| **RST** | Reset | GPIO 19 | `D19` | `19` |
+| **DC** | Data/Command | GPIO 18 | `D18` | `18` |
+| **CS** | Chip Select | GPIO 8 | `SPI_SS` |  `SPI_CE0` |
+| **BL** | Backlight | GPIO 20 | `D20` | `20` |
+
 
 > **なぜこれが必要なの？**
 > Raspberry PiとLCDディスプレイが物理的に接続されていないと、電気信号を送受信できず、画面に何も表示することができません。HATタイプは接続が簡単なので初心者におすすめです。
@@ -189,8 +214,31 @@ First, let's gather the necessary components for this project.
 Next, connect the LCD display to your Raspberry Pi.
 
 *   **For HATs**: Align the female header of the LCD HAT with the GPIO pins on the Raspberry Pi and press down firmly to connect it.
-*   **For Breadboard Modules**: Use jumper wires to connect the pins on the LCD to the corresponding GPIO pins on the Raspberry Pi. You will need to consult the datasheet for your specific LCD to know the correct pinout.
+*   **For Breadboard Modules**: Use jumper wires to connect the pins on the LCD to the corresponding GPIO pins on the Raspberry Pi. You can reference to table below for the correct pinout.
 
+2.0 inch waveshare LCD display
+| LCD Pin | Function | Raspberry Pi Pin (BCM) | DFRobot HAT Pin Label | Ninja HAT Pin Label |
+| :--- | :--- | :---: | :--- | :--- |
+| **VCC** | Power (3.3V) | 17 | `3.3V` | `3V` |
+| **GND** | Ground | 20 | `GND` | `GND` |
+| **DIN** | SPI Data In (MOSI) | GPIO 10 | `SPI_MOSI` | `SPI_MOSI` |
+| **CLK** | SPI Clock (SCLK) | GPIO 11 | `SPI_SCLK` | `SPI_SCLK` |
+| **CS** | Chip Select | GPIO 8 | `SPI_SS` |  `SPI_CE0` |
+| **DC** | Data/Command | GPIO 18 | `D18` | `18` |
+| **RST** | Reset | GPIO 19 | `D19` | `19` |
+| **BL** | Backlight | GPIO 20 | `D20` | `20` |
+
+2.4 inch SPI ST7789 LCD display
+| LCD Pin | Function | Raspberry Pi Pin (BCM) | DFRobot HAT Pin Label | Ninja HAT Pin Label |
+| :--- | :--- | :---: | :--- | :--- |
+| **GND** | Ground | 20 | `GND` | `GND` |
+| **VCC** | Power (3.3V) | 17 | `3.3V` | `3V` |
+| **SCL** | SPI Clock (SCLK) | GPIO 11 | `SPI_SCLK` | `SPI_SCLK` |
+| **SDA** | SPI Data In (MOSI) | GPIO 10 | `SPI_MOSI` | `SPI_MOSI` |
+| **RST** | Reset | GPIO 19 | `D19` | `19` |
+| **DC** | Data/Command | GPIO 18 | `D18` | `18` |
+| **CS** | Chip Select | GPIO 8 | `SPI_SS` |  `SPI_CE0` |
+| **BL** | Backlight | GPIO 20 | `D20` | `20` |
 > **Why is this necessary?**
 > The Raspberry Pi needs a physical connection to the LCD to send electrical signals that control what is shown on the screen. HATs are recommended for beginners as they are simple to plug in and require no wiring.
 

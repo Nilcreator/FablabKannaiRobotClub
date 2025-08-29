@@ -323,6 +323,11 @@ uv run python robot_control.py
 -   センサーの値に応じてサーボの動きやディスプレイ表示を変える
 -   ボタン操作でロボットをコントロールする
 
+など、あなたのアイデアを形にしていきましょう！
+
+さらに詳しい情報や高度な使い方については、各ライブラリの`README.md`や`samples`フォルダの中のサンプルコードを参考にしてください。
+
+
 # `piservo0` & `pi0disp` User Guide
 
 ## Introduction
@@ -650,8 +655,3 @@ This is just the beginning. Apply what you've learned in this guide to:
 ...and bring your own ideas to life!
 
 For more detailed information and advanced usage, please refer to the `README.md` files of each library and the sample code in their `samples` folders.
-
-
-など、あなたのアイデアを形にしていきましょう！
-
-さらに詳しい情報や高度な使い方については、各ライブラリの`README.md`や`samples`フォルダの中のサンプルコードを参考にしてください。

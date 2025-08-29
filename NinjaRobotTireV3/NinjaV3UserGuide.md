@@ -323,6 +323,335 @@ uv run python robot_control.py
 -   センサーの値に応じてサーボの動きやディスプレイ表示を変える
 -   ボタン操作でロボットをコントロールする
 
+# `piservo0` & `pi0disp` User Guide
+
+## Introduction
+
+Welcome! This guide is a handbook for those who want to start with robotics and electronics using a Raspberry Pi.
+
+- **`piservo0`**: A library for precisely controlling servo motors.
+- **`pi0disp`**: A library for displaying text and images on small displays.
+
+Using these two libraries and the modern Python development tool `uv`, we will carefully explain, step-by-step, how to create your own robot control program from scratch, in a way that even those without programming experience can understand.
+
+### What You'll Need
+
+- **Hardware**:
+    - Raspberry Pi (Pi 4, Pi 5, or Pi Zero 2 W recommended)
+    - Servo motor (e.g., SG90)
+    - A small SPI-connected display with an ST7789V chip
+    - Jumper wires
+
+- **Software**:
+    - Raspberry Pi OS (must be installed)
+    - Internet connection
+
+---
+
+## Chapter 1: Setting Up the Development Environment
+
+First, let's set up the "development environment" for creating programs and running the libraries.
+
+### 1.1. Installing and Enabling `pigpio`
+
+`pigpio` is an essential piece of software for safely and easily controlling the Raspberry Pi's GPIO pins (the pins you connect electronic components to).
+
+1.  **Open the Terminal**: Click the black screen icon in the top-left corner of the Raspberry Pi desktop.
+
+2.  **Install `pigpio`**: Enter the following two commands, one line at a time, pressing `Enter` after each one.
+    ```bash
+    sudo apt update
+    sudo apt install pigpio
+    ```
+
+3.  **Start and Enable `pigpio`**: Similarly, execute the next two commands. This ensures that `pigpio` starts automatically every time your Raspberry Pi boots up.
+    ```bash
+    sudo systemctl start pigpiod
+    sudo systemctl enable pigpiod
+    ```
+
+### 1.2. Installing `uv`
+
+`uv` is an extremely fast tool for installing and managing Python libraries (collections of useful program components).
+
+1.  **Execute the following command in the terminal**:
+    ```bash
+    curl -L -s https://astral.sh/uv/install.sh | sh
+    ```
+    This will install `uv` on your system.
+
+### 1.3. Project Preparation and Creating a Virtual Environment
+
+Next, let's create a dedicated working folder for your project and a "virtual environment" to manage your libraries.
+
+1.  **Create a project folder**:
+    ```bash
+    mkdir my_robot
+    cd my_robot
+    ```
+    This creates a folder named `my_robot` and moves you inside it.
+
+2.  **Create a virtual environment**:
+    ```bash
+    uv venv
+    ```
+    Running this command creates a special folder named `.venv` inside your current folder (`my_robot`). This is the virtual environment. It prevents the libraries used in this project from conflicting with other projects.
+
+---
+
+## Chapter 2: Controlling a Servo Motor with `piservo0`
+
+Now, let's get to controlling a servo motor.
+
+### 2.1. Installing `piservo0`
+
+Use `uv` to install the `piservo0` library.
+
+```bash
+uv pip install piservo0
+```
+
+### 2.2. Calibrating Your Servo
+
+Servo motors have individual differences, and their movements can vary slightly even with the same command. Therefore, we first perform "calibration" to teach them precise movements.
+
+1.  **Wiring**: Connect the servo motor to the Raspberry Pi.
+    - **Brown/Black**: GND (e.g., Pin 6)
+    - **Red**: 5V (e.g., Pin 2)
+    - **Orange/Yellow**: A GPIO pin (e.g., Pin 17)
+
+2.  **Launch the calibration tool**:
+    If you connected the servo to GPIO pin 17, run the following command:
+    ```bash
+    uv run piservo0 calib 17
+    ```
+
+3.  **Interactive Adjustment**:
+    - Press the `h` key for help.
+    - The `w` and `s` keys will move the servo.
+    - The `Tab` key switches between the angles to be adjusted (-90°, 0°, 90°).
+    - For each angle, use `w`/`s` to fine-tune the servo's position so it points directly to the side, front, and opposite side. Once a position is set, press `Enter` to save it.
+    - Press `q` to quit.
+
+    This calibration data is saved in a file named `servo.json` within your project folder.
+
+### 2.3. Your First Servo Control Script
+
+1.  **Create a file**: Create a file named `control_servo.py` and paste the following code into it.
+    ```python
+    import time
+    import pigpio
+    from piservo0 import CalibrableServo
+
+    # --- Settings ---
+    SERVO_PIN = 17  # The GPIO pin the servo is connected to
+
+    # --- Initialization ---
+    pi = pigpio.pi()
+    if not pi.connected:
+        print("Could not connect to pigpio. Is the daemon running?")
+        exit()
+
+    # Initialize as a calibrated servo
+    servo = CalibrableServo(pi, SERVO_PIN)
+    print(f"Initialized servo on GPIO {SERVO_PIN}.")
+
+    try:
+        # --- Move the Servo ---
+        print("Moving to center (0 degrees).")
+        servo.move_angle(0)
+        time.sleep(2)  # Wait for 2 seconds
+
+        print("Moving to minimum angle (-90 degrees).")
+        servo.move_angle(-90)
+        time.sleep(2)
+
+        print("Moving to maximum angle (90 degrees).")
+        servo.move_angle(90)
+        time.sleep(2)
+
+    except KeyboardInterrupt:
+        print("
+Exiting program.")
+
+    finally:
+        # --- Cleanup ---
+        print("Turning servo off.")
+        servo.off()
+        pi.stop()
+    ```
+
+2.  **Run the script**:
+    ```bash
+    uv run python control_servo.py
+    ```
+    If the servo moves to the center, then to one side, and finally to the other side, it's a success!
+
+---
+
+## Chapter 3: Displaying on the Screen with `pi0disp`
+
+Next, let's display shapes and text on the screen.
+
+### 3.1. Installing `pi0disp`
+
+Use `uv` to install the `pi0disp` library. An image processing library called `Pillow` will be installed alongside it.
+
+```bash
+uv pip install pi0disp Pillow
+```
+
+### 3.2. Your First Display Script
+
+1.  **Wiring**: Connect the display's pins to the corresponding GPIO pins on the Raspberry Pi (check your display's datasheet for the pinout).
+
+2.  **Create a file**: Create a file named `show_on_display.py` and paste the following code into it.
+    ```python
+    from pi0disp import ST7789V
+    from PIL import Image, ImageDraw
+
+    print("Initializing display.")
+
+    # Using a 'with' statement automatically handles cleanup when the program ends
+    with ST7789V() as lcd:
+        # Create an image using PIL
+        # You can get the display size with lcd.width and lcd.height
+        image = Image.new("RGB", (lcd.width, lcd.height), "black")
+        draw = ImageDraw.Draw(image)
+
+        # Draw a blue circle
+        print("Drawing a circle.")
+        draw.ellipse(
+            (10, 10, lcd.width - 10, lcd.height - 10),
+            fill="blue",
+            outline="white"
+        )
+
+        # Draw text
+        print("Drawing text.")
+        draw.text((60, 150), "Hello, Robot!", fill="white")
+
+        # Display the created image (circle and text) on the screen
+        print("Displaying the image.")
+        lcd.display(image)
+
+    print("Done.")
+    ```
+
+3.  **Run the script**:
+    ```bash
+    uv run python show_on_display.py
+    ```
+    If you see a black background, a blue circle, and the text "Hello, Robot!" on your display, it's a success.
+
+---
+
+## Chapter 4: Putting It All Together
+
+Finally, let's create a program that links the servo's movement with the display's output.
+
+### 4.1. The Goal
+
+Smoothly move a servo motor from -90 to +90 degrees and display its current angle on the screen in real-time.
+
+### 4.2. The Final Script
+
+1.  **Create a file**: Create a file named `robot_control.py` and paste the following code into it.
+    ```python
+    import time
+    import pigpio
+    from piservo0 import CalibrableServo
+    from pi0disp import ST7789V, draw_text
+    from PIL import Image, ImageDraw, ImageFont
+
+    # --- Settings ---
+    SERVO_PIN = 17
+
+    # --- Initialization ---
+    pi = pigpio.pi()
+    if not pi.connected:
+        print("Could not connect to pigpio.")
+        exit()
+
+    servo = CalibrableServo(pi, SERVO_PIN)
+
+    # Initialize the display using a 'with' statement
+    with ST7789V() as lcd:
+        print("Starting servo and display integration. Press Ctrl+C to exit.")
+
+        try:
+            # Move from -90 to 90 degrees in 5-degree steps
+            for angle in range(-90, 91, 5):
+                # 1. Move the servo
+                servo.move_angle(angle)
+
+                # 2. Create the image to display
+                #    Create a new black image each time to clear the previous drawing
+                image = Image.new("RGB", (lcd.width, lcd.height), "black")
+                draw = ImageDraw.Draw(image)
+
+                # 3. Draw the current angle as text
+                text = f"Angle: {angle}"
+                
+                # Display the text large and centered
+                draw_text(draw, text, ImageFont.load_default(size=30),
+                          x='center', y='center',
+                          width=lcd.width, height=lcd.height,
+                          color=(255, 255, 255))
+
+                # 4. Display on the screen
+                lcd.display(image)
+
+                # 5. Wait a little
+                time.sleep(0.05)
+
+            # Move in the reverse direction
+            for angle in range(90, -91, -5):
+                servo.move_angle(angle)
+                image = Image.new("RGB", (lcd.width, lcd.height), "black")
+                draw = ImageDraw.Draw(image)
+                text = f"Angle: {angle}"
+                draw_text(draw, text, ImageFont.load_default(size=30),
+                          x='center', y='center',
+                          width=lcd.width, height=lcd.height,
+                          color=(255, 255, 255))
+                lcd.display(image)
+                time.sleep(0.05)
+
+        except KeyboardInterrupt:
+            print("
+Exiting program.")
+
+        finally:
+            # --- Cleanup ---
+            servo.off()
+            pi.stop()
+            print("Turned off servo and display.")
+    ```
+
+### 4.3. Execution
+
+```bash
+uv run python robot_control.py
+```
+
+The servo should slowly sweep back and forth, and the angle displayed on the screen should update in real-time to match its movement.
+
+## Conclusion
+
+Congratulations! You have successfully created a basic program that integrates a servo motor and a display using `piservo0` and `pi0disp`.
+
+This is just the beginning. Apply what you've learned in this guide to:
+
+-   Control a robot arm by moving multiple servos.
+-   Change the servo's movement or the display's output based on sensor readings.
+-   Control your robot with button inputs.
+
+...and bring your own ideas to life!
+
+For more detailed information and advanced usage, please refer to the `README.md` files of each library and the sample code in their `samples` folders.
+
+
 など、あなたのアイデアを形にしていきましょう！
 
 さらに詳しい情報や高度な使い方については、各ライブラリの`README.md`や`samples`フォルダの中のサンプルコードを参考にしてください。

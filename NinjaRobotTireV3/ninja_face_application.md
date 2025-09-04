@@ -1,6 +1,3 @@
-Of course. Here is the content optimized for readability in downloadable markdown format.
-
-````markdown
 # Building an Advanced SPI LCD Application for Raspberry Pi Zero 2 W
 
 ## pi0disp User Guide (Enhanced)
@@ -77,7 +74,7 @@ Install `git` and `uv`. `uv` is a modern, fast Python package manager that simpl
 sudo apt install git -y
 curl -LsSf [https://astral.sh/uv/install.sh](https://astral.sh/uv/install.sh) | sh
 source $HOME/.cargo/env
-````
+```
 
 **Explanation:** This installs `git` for cloning the repository and `uv` for managing the Python project.
 

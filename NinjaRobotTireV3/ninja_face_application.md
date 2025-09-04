@@ -715,6 +715,3 @@ To provide a smooth, professional-quality animation, this project implements a d
 #### Section 2.4: Diagnostic and Testing Utilities
 
 To aid users in debugging, a diagnostic mode is included in `ninja_faces.py`, activated with the `--diag` flag. It renders a test pattern with color bars, a bounding box, and orientation text. A separate, minimal script named `test_text.py` is also provided to act as a "Hello, World\!" for the hardware setup.
-
-```
-```

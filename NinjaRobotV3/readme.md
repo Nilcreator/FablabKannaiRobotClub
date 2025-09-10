@@ -1,6 +1,7 @@
-# NinjaRobotV3 ユーザーガイド (taniguide.md)
 
-このガイドでは、`pi0disp`、`piservo0`、`vl53l0x_pigpio` ライブラリの包括的な概要と、`NinjaRobotV3` プロジェクト内での使用方法について説明します。
+# NinjaRobotV3 ユーザーガイド
+
+このガイドでは、`pi0disp`、`piservo0`、`vl53l0x_pigpio`、および `pi0buzzer` ライブラリの概要と、`NinjaRobotV3` プロジェクト内での使用方法について説明します。
 
 ## 1. 初期設定
 
@@ -8,28 +9,29 @@
 
 ### 1.1. 仮想環境の作成と有効化
 
-このプロジェクトでは仮想環境の使用を推奨します。
+このプロジェクトでは、仮想環境の使用を推奨します。
 
 ```bash
-# 仮想環境を作成
+# 仮想環境の作成
 uv venv
 
-# 仮想環境を有効化
+# 仮想環境の有効化
 source .venv/bin/activate
 ```
 
 ### 1.2. 依存関係のインストール
 
-`uv` を使用して、3つのライブラリすべてに必要なパッケージをインストールします。
+`uv` を使用して、すべてのライブラリに必要なパッケージをインストールします。
 
 ```bash
 # サブディレクトリからすべての依存関係をインストール
 uv pip install -e pi0disp
 uv pip install -e piservo0
 uv pip install -e vl53l0x_pigpio
+uv pip install -e pi0buzzer
 ```
 
-## 2. ライブラリの使用方法
+## 2. ライブラリの使用
 
 ### 2.1. `pi0disp` - ディスプレイドライバ
 
@@ -44,9 +46,9 @@ from pi0disp import ST7789V
 from PIL import Image, ImageDraw
 import time
 
-# ディスプレイを初期化
+# ディスプレイの初期化
 with ST7789V() as lcd:
-    # PILで画像を作成
+    # PIL で画像を作成
     image = Image.new("RGB", (lcd.width, lcd.height), "black")
     draw = ImageDraw.Draw(image)
 
@@ -69,12 +71,12 @@ with ST7789V() as lcd:
     time.sleep(5)
 ```
 
-#### CLIでの使用方法
+#### CLI の使用法
 
-`pi0disp` コマンドは、ディスプレイをテストするためのシンプルなCLIを提供します。
+`pi0disp` コマンドは、ディスプレイをテストするためのシンプルな CLI を提供します。
 
 ```bash
-# ボールアニメーションのデモを実行
+# ボールアニメーションデモを実行
 uv run pi0disp ball_anime
 
 # ディスプレイをオフにする
@@ -83,7 +85,7 @@ uv run pi0disp off
 
 ### 2.2. `piservo0` - サーボモーター制御
 
-`piservo0` ライブラリは、サーボモーターの精密な制御を提供します。
+`piservo0` ライブラリは、サーボモーターを精密に制御します。
 
 #### ライブラリとして
 
@@ -121,7 +123,7 @@ from piservo0 import CalibrableServo
 PIN = 17
 
 pi = pigpio.pi()
-servo = CalibrableServo(pi, PIN) # servo.jsonからキャリブレーションを読み込む
+servo = CalibrableServo(pi, PIN) # servo.json からキャリブレーションを読み込みます
 
 servo.move_angle(45)  # 45度に移動
 time.sleep(1)
@@ -133,34 +135,34 @@ servo.off()
 pi.stop()
 ```
 
-#### CLIでの使用方法
+#### CLI の使用法
 
-`piservo0` コマンドにより、キャリブレーションとリモート制御が可能です。
+`piservo0` コマンドは、キャリブレーションとリモート制御を可能にします。
 
 **キャリブレーション**
 
 ```bash
-# GPIO 17のサーボをキャリブレーション
+# GPIO 17 のサーボをキャリブレーション
 uv run piservo0 calib 17
 ```
 
-**APIサーバー**
+**API サーバー**
 
 ```bash
-# GPIO 17, 27, 22, 25のサーボ用APIサーバーを起動
+# GPIO 17, 27, 22, 25 のサーボ用の API サーバーを起動
 uv run piservo0 api-server 17 27 22 25
 ```
 
-**APIクライアント**
+**API クライアント**
 
 ```bash
-# APIサーバーに接続
+# API サーバーに接続
 uv run piservo0 api-client
 ```
 
 ### 2.3. `vl53l0x_pigpio` - 距離センサー
 
-`vl53l0x_pigpio` ライブラリは、VL53L0X ToF（Time-of-Flight）距離センサー用のドライバです。
+`vl53l0x_pigpio` ライブラリは、VL53L0X 飛行時間型距離センサー用のドライバです。
 
 #### ライブラリとして
 
@@ -173,7 +175,7 @@ import time
 
 pi = pigpio.pi()
 if not pi.connected:
-    raise RuntimeError("pigpioに接続できませんでした")
+    raise RuntimeError("pigpio に接続できませんでした")
 
 try:
     with VL53L0X(pi) as tof:
@@ -181,41 +183,91 @@ try:
         if distance > 0:
             print(f"距離: {distance} mm")
         else:
-            print("無効なデータです。")
+            print("無効なデータ")
 finally:
     pi.stop()
 ```
 
-#### CLIでの使用方法
+#### CLI の使用法
 
 `vl53l0x_pigpio` コマンドは、センサーと対話するためのツールを提供します。
 
 **距離の取得**
 
 ```bash
-# 5回の距離測定値を取得
+# 5 回の距離測定値を取得
 uv run vl53l0x_pigpio get --count 5
 ```
 
 **パフォーマンステスト**
 
 ```bash
-# 500回の測定でパフォーマンステストを実行
+# 500 回の測定でパフォーマンステストを実行
 uv run vl53l0x_pigpio performance --count 500
 ```
 
 **キャリブレーション**
 
 ```bash
-# 150mmのターゲットでセンサーをキャリブレーション
+# 150mm のターゲットでセンサーをキャリブレーション
 uv run vl53l0x_pigpio calibrate --distance 150
 ```
 
----
+### 2.4. `pi0buzzer` - ブザーライブラリ
 
-# NinjaRobotV3 User Guide (taniguide.md)
+`pi0buzzer` ライブラリは、ピエゾブザー用のシンプルなドライバです。
 
-This guide provides a comprehensive overview of the `pi0disp`, `piservo0`, and `vl53l0x_pigpio` libraries and how to use them within the `NinjaRobotV3` project.
+#### ライブラリとして
+
+Python スクリプトで `Buzzer` クラスを使用してブザーを制御できます。
+
+```python
+import pigpio
+import time
+from pi0buzzer.driver import Buzzer
+
+# pigpio の初期化
+pi = pigpio.pi()
+if not pi.connected:
+    raise RuntimeError("pigpio デーモンに接続できませんでした")
+
+# ブザーの初期化
+buzzer = Buzzer(pi, 18)
+
+# カスタムサウンドの再生
+try:
+    while True:
+        buzzer.play_sound(440, 0.5) # 440 Hz の音を 0.5 秒間再生
+        time.sleep(1)
+except KeyboardInterrupt:
+    pass
+finally:
+    buzzer.off()
+    pi.stop()
+```
+
+#### CLI の使用法
+
+`pi0buzzer` コマンドは、ブザーと対話するためのシンプルな CLI を提供します。
+
+**初期化**
+
+```bash
+# GPIO 18 のブザーを初期化
+pi0buzzer init 18
+```
+
+**音楽の再生**
+
+ブザーを初期化した後、キーボードで音楽を再生できます:
+
+```bash
+pi0buzzer playmusic
+```
+
+# NinjaRobotV3 User Guide
+
+This guide provides a comprehensive overview of the `pi0disp`, `piservo0`, `vl53l0x_pigpio`, and `pi0buzzer` libraries and how to use them within the `NinjaRobotV3` project.
 
 ## 1. Initial Setup
 
@@ -235,13 +287,14 @@ source .venv/bin/activate
 
 ### 1.2. Install Dependencies
 
-Install the necessary packages for all three libraries using `uv`.
+Install the necessary packages for all libraries using `uv`.
 
 ```bash
 # Install all dependencies from the subdirectories
 uv pip install -e pi0disp
 uv pip install -e piservo0
 uv pip install -e vl53l0x_pigpio
+uv pip install -e pi0buzzer
 ```
 
 ## 2. Using the Libraries
@@ -425,3 +478,59 @@ uv run vl53l0x_pigpio performance --count 500
 # Calibrate the sensor with a target at 150mm
 uv run vl53l0x_pigpio calibrate --distance 150
 ```
+
+### 2.4. `pi0buzzer` - Buzzer Driver
+
+The `pi0buzzer` library is a simple driver for a piezo buzzer.
+
+#### As a Library
+
+You can use the `Buzzer` class to control the buzzer in your Python scripts.
+
+```python
+import pigpio
+import time
+from pi0buzzer.driver import Buzzer
+
+# Initialize pigpio
+pi = pigpio.pi()
+if not pi.connected:
+    raise RuntimeError("Could not connect to pigpio daemon.")
+
+# Initialize the buzzer
+buzzer = Buzzer(pi, 18)
+
+# Play a custom sound
+try:
+    while True:
+        buzzer.play_sound(440, 0.5) # Play 440 Hz for 0.5 seconds
+        time.sleep(1)
+except KeyboardInterrupt:
+    pass
+finally:
+    buzzer.off()
+    pi.stop()
+```
+
+#### CLI Usage
+
+The `pi0buzzer` command provides a simple CLI for interacting with the buzzer.
+
+**Initialization**
+
+```bash
+# Initialize the buzzer on GPIO 18
+pi0buzzer init 18
+```
+
+**Play Music**
+
+After initializing the buzzer, you can play music with it using your keyboard:
+
+```bash
+pi0buzzer playmusic
+```
+
+---
+
+

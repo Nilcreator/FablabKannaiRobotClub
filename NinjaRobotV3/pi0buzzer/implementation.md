@@ -1,4 +1,3 @@
-
 # `pi0buzzer` Implementation Instructions
 
 This document provides a step-by-step guide on how to create the `pi0buzzer` driver.
@@ -75,17 +74,19 @@ class Buzzer:
             (523, 0.4),  # C5
         ]
         for note, duration in notes:
-            self.pi.hardware_PWM(self.pin, note, 500000)  # 50% duty cycle
+            self.pi.set_PWM_frequency(self.pin, note)
+            self.pi.set_PWM_dutycycle(self.pin, 128)  # 50% duty cycle
             time.sleep(duration)
-        self.pi.hardware_PWM(self.pin, 0, 0)  # Stop PWM
+        self.pi.set_PWM_dutycycle(self.pin, 0)  # Stop PWM
 
     def play_sound(self, frequency, duration):
-        self.pi.hardware_PWM(self.pin, frequency, 500000)  # 50% duty cycle
+        self.pi.set_PWM_frequency(self.pin, frequency)
+        self.pi.set_PWM_dutycycle(self.pin, 128)  # 50% duty cycle
         time.sleep(duration)
-        self.pi.hardware_PWM(self.pin, 0, 0)  # Stop PWM
+        self.pi.set_PWM_dutycycle(self.pin, 0)  # Stop PWM
 
     def off(self):
-        self.pi.hardware_PWM(self.pin, 0, 0)  # Stop PWM
+        self.pi.set_PWM_dutycycle(self.pin, 0)  # Stop PWM
 ```
 
 ## 4. Create the command-line interface

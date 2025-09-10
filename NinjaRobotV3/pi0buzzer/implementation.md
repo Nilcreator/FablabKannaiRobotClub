@@ -1,3 +1,4 @@
+
 # `pi0buzzer` Implementation Instructions
 
 This document provides a step-by-step guide on how to create the `pi0buzzer` driver.
@@ -46,6 +47,9 @@ import pigpio
 import time
 import json
 import os
+import sys
+import tty
+import termios
 
 class Buzzer:
     def __init__(self, pi, pin, config_file='buzzer.json'):
@@ -87,6 +91,43 @@ class Buzzer:
 
     def off(self):
         self.pi.set_PWM_dutycycle(self.pin, 0)  # Stop PWM
+
+class MusicBuzzer(Buzzer):
+    def __init__(self, pi, pin, config_file='buzzer.json'):
+        super().__init__(pi, pin, config_file)
+        self.notes = {
+            # Middle C
+            'a': 262, 's': 294, 'd': 330, 'f': 349, 'g': 392, 'h': 440, 'j': 494,
+            # High C
+            'q': 523, 'w': 587, 'e': 659, 'r': 698, 't': 784, 'y': 880, 'u': 988,
+            # Low C
+            'z': 131, 'x': 147, 'c': 165, 'v': 175, 'b': 196, 'n': 220, 'm': 247,
+        }
+
+    def play_music(self):
+        print("Press keys to play notes. Press 'esc' to quit.")
+        print("Middle C: a, s, d, f, g, h, j")
+        print("High C:   q, w, e, r, t, y, u")
+        print("Low C:    z, x, c, v, b, n, m")
+        input("Press Enter to start...")
+
+        fd = sys.stdin.fileno()
+        old_settings = termios.tcgetattr(fd)
+        try:
+            tty.setraw(sys.stdin.fileno())
+            while True:
+                char = sys.stdin.read(1)
+                if ord(char) == 27:  # ESC key
+                    break
+                if char in self.notes:
+                    self.pi.set_PWM_frequency(self.pin, self.notes[char])
+                    self.pi.set_PWM_dutycycle(self.pin, 128)
+                else:
+                    self.pi.set_PWM_dutycycle(self.pin, 0)
+        finally:
+            termios.tcsetattr(fd, termios.TCSADRAIN, old_settings)
+            self.off()
+
 ```
 
 ## 4. Create the command-line interface
@@ -98,7 +139,8 @@ This file provides a simple CLI for initializing the buzzer.
 ```python
 import click
 import pigpio
-from .driver import Buzzer
+import json
+from .driver import Buzzer, MusicBuzzer
 
 @click.group()
 def cli():
@@ -115,6 +157,26 @@ def init(pin):
     buzzer.off()
     pi.stop()
     click.echo(f"Buzzer initialized on GPIO {pin} and config saved to buzzer.json")
+
+@cli.command()
+@click.option('--pin', type=int, default=None, help='GPIO pin for the buzzer')
+def playmusic(pin):
+    """Play music with the buzzer using the keyboard."""
+    pi = pigpio.pi()
+    if not pi.connected:
+        raise click.ClickException("Could not connect to pigpio daemon. Is it running?")
+
+    if pin is None:
+        try:
+            with open('buzzer.json', 'r') as f:
+                config = json.load(f)
+                pin = config['pin']
+        except FileNotFoundError:
+            raise click.ClickException("Buzzer not initialized. Please run 'pi0buzzer init <pin>' first or specify a pin with --pin.")
+
+    music_buzzer = MusicBuzzer(pi, pin)
+    music_buzzer.play_music()
+    pi.stop()
 
 if __name__ == '__main__':
     cli()
@@ -152,6 +214,14 @@ pi0buzzer init 18
 ```
 
 This will play a short "Hello World" sound and create a `buzzer.json` file with the pin number.
+
+### Play Music
+
+After initializing the buzzer, you can play music with it using your keyboard:
+
+```bash
+pi0buzzer playmusic
+```
 
 ### As a Library
 

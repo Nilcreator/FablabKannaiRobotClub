@@ -9,7 +9,7 @@ Install the driver using `uv`:
 
 ```bash
 # Make sure you are in the NinjaRobotV3 directory
-uv pip install -e pi0buzzer
+uv pip install -e pi0buzzer/.
 ```
 
 ## Usage
@@ -19,7 +19,7 @@ uv pip install -e pi0buzzer
 You can initialize the buzzer using the `pi0buzzer` command:
 
 ```bash
-# Initialize the buzzer on GPIO 18
+# Initialize the buzzer on GPIO 26
 pi0buzzer init 18
 ```
 

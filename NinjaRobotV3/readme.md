@@ -1,3 +1,217 @@
+# NinjaRobotV3 ユーザーガイド (taniguide.md)
+
+このガイドでは、`pi0disp`、`piservo0`、`vl53l0x_pigpio` ライブラリの包括的な概要と、`NinjaRobotV3` プロジェクト内での使用方法について説明します。
+
+## 1. 初期設定
+
+このプロジェクトでは、Pythonの仮想環境と依存関係の管理に `uv` を使用します。
+
+### 1.1. 仮想環境の作成と有効化
+
+このプロジェクトでは仮想環境の使用を推奨します。
+
+```bash
+# 仮想環境を作成
+uv venv
+
+# 仮想環境を有効化
+source .venv/bin/activate
+```
+
+### 1.2. 依存関係のインストール
+
+`uv` を使用して、3つのライブラリすべてに必要なパッケージをインストールします。
+
+```bash
+# サブディレクトリからすべての依存関係をインストール
+uv pip install -e pi0disp
+uv pip install -e piservo0
+uv pip install -e vl53l0x_pigpio
+```
+
+## 2. ライブラリの使用方法
+
+### 2.1. `pi0disp` - ディスプレイドライバ
+
+`pi0disp` ライブラリは、Raspberry Pi 上の ST7789V ベースのディスプレイ用の高速ドライバです。
+
+#### ライブラリとして
+
+Python スクリプトで `ST7789V` クラスを使用してディスプレイを制御できます。
+
+```python
+from pi0disp import ST7789V
+from PIL import Image, ImageDraw
+import time
+
+# ディスプレイを初期化
+with ST7789V() as lcd:
+    # PILで画像を作成
+    image = Image.new("RGB", (lcd.width, lcd.height), "black")
+    draw = ImageDraw.Draw(image)
+
+    # 青い円を描画
+    draw.ellipse(
+        (10, 10, lcd.width - 10, lcd.height - 10),
+        fill="blue",
+        outline="white"
+    )
+
+    # 画像を表示
+    lcd.display(image)
+
+    time.sleep(5)
+
+    # 部分更新の例
+    draw.rectangle((50, 50, 100, 100), fill="red")
+    lcd.display_region(image, 50, 50, 100, 100)
+
+    time.sleep(5)
+```
+
+#### CLIでの使用方法
+
+`pi0disp` コマンドは、ディスプレイをテストするためのシンプルなCLIを提供します。
+
+```bash
+# ボールアニメーションのデモを実行
+uv run pi0disp ball_anime
+
+# ディスプレイをオフにする
+uv run pi0disp off
+```
+
+### 2.2. `piservo0` - サーボモーター制御
+
+`piservo0` ライブラリは、サーボモーターの精密な制御を提供します。
+
+#### ライブラリとして
+
+`PiServo` または `CalibrableServo` クラスを使用してサーボを制御します。
+
+**基本的な使用法 (`PiServo`)**
+
+```python
+import time
+import pigpio
+from piservo0 import PiServo
+
+PIN = 17
+
+pi = pigpio.pi()
+servo = PiServo(pi, PIN)
+
+servo.move_pulse(1000)
+time.sleep(0.5)
+
+servo.move_max()
+time.sleep(0.5)
+
+servo.off()
+pi.stop()
+```
+
+**キャリブレーション済みでの使用法 (`CalibrableServo`)**
+
+```python
+import time
+import pigpio
+from piservo0 import CalibrableServo
+
+PIN = 17
+
+pi = pigpio.pi()
+servo = CalibrableServo(pi, PIN) # servo.jsonからキャリブレーションを読み込む
+
+servo.move_angle(45)  # 45度に移動
+time.sleep(1)
+
+servo.move_center()
+time.sleep(1)
+
+servo.off()
+pi.stop()
+```
+
+#### CLIでの使用方法
+
+`piservo0` コマンドにより、キャリブレーションとリモート制御が可能です。
+
+**キャリブレーション**
+
+```bash
+# GPIO 17のサーボをキャリブレーション
+uv run piservo0 calib 17
+```
+
+**APIサーバー**
+
+```bash
+# GPIO 17, 27, 22, 25のサーボ用APIサーバーを起動
+uv run piservo0 api-server 17 27 22 25
+```
+
+**APIクライアント**
+
+```bash
+# APIサーバーに接続
+uv run piservo0 api-client
+```
+
+### 2.3. `vl53l0x_pigpio` - 距離センサー
+
+`vl53l0x_pigpio` ライブラリは、VL53L0X ToF（Time-of-Flight）距離センサー用のドライバです。
+
+#### ライブラリとして
+
+`VL53L0X` クラスを使用して距離測定値を取得します。
+
+```python
+import pigpio
+from vl53l0x_pigpio import VL53L0X
+import time
+
+pi = pigpio.pi()
+if not pi.connected:
+    raise RuntimeError("pigpioに接続できませんでした")
+
+try:
+    with VL53L0X(pi) as tof:
+        distance = tof.get_range()
+        if distance > 0:
+            print(f"距離: {distance} mm")
+        else:
+            print("無効なデータです。")
+finally:
+    pi.stop()
+```
+
+#### CLIでの使用方法
+
+`vl53l0x_pigpio` コマンドは、センサーと対話するためのツールを提供します。
+
+**距離の取得**
+
+```bash
+# 5回の距離測定値を取得
+uv run vl53l0x_pigpio get --count 5
+```
+
+**パフォーマンステスト**
+
+```bash
+# 500回の測定でパフォーマンステストを実行
+uv run vl53l0x_pigpio performance --count 500
+```
+
+**キャリブレーション**
+
+```bash
+# 150mmのターゲットでセンサーをキャリブレーション
+uv run vl53l0x_pigpio calibrate --distance 150
+```
+
+---
 
 # NinjaRobotV3 User Guide (taniguide.md)
 
@@ -211,4 +425,3 @@ uv run vl53l0x_pigpio performance --count 500
 # Calibrate the sensor with a target at 150mm
 uv run vl53l0x_pigpio calibrate --distance 150
 ```
-

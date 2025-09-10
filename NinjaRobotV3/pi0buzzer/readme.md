@@ -1,3 +1,4 @@
+
 # pi0buzzer
 
 A simple buzzer driver for Raspberry Pi.
@@ -8,7 +9,7 @@ Install the driver using `uv`:
 
 ```bash
 # Make sure you are in the NinjaRobotV3 directory
-uv pip install -e pi0buzzer/.
+uv pip install -e pi0buzzer
 ```
 
 ## Usage
@@ -19,10 +20,18 @@ You can initialize the buzzer using the `pi0buzzer` command:
 
 ```bash
 # Initialize the buzzer on GPIO 18
-pi0buzzer init 26
+pi0buzzer init 18
 ```
 
 This will play a short "Hello World" sound and create a `buzzer.json` file with the pin number.
+
+### Play Music
+
+After initializing the buzzer, you can play music with it using your keyboard:
+
+```bash
+pi0buzzer playmusic
+```
 
 ### As a Library
 

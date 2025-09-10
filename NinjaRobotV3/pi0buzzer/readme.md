@@ -9,7 +9,7 @@ Install the driver using `uv`:
 
 ```bash
 # Make sure you are in the NinjaRobotV3 directory
-uv pip install -e pi0buzzer
+uv pip install -e pi0buzzer/.
 ```
 
 ## Usage

@@ -20,7 +20,7 @@ You can initialize the buzzer using the `pi0buzzer` command:
 
 ```bash
 # Initialize the buzzer on GPIO 26
-pi0buzzer init 18
+pi0buzzer init 26
 ```
 
 This will play a short "Hello World" sound and create a `buzzer.json` file with the pin number.

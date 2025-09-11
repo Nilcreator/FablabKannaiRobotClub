@@ -191,12 +191,18 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         ```bash
         free -h
         ```
+9. Install uv Python Package Manager**
+As recommended by the `piservo0` guidebook, `uv` is a very fast and modern tool for managing Python project dependencies and virtual environments.
 
-9.  **Create Project Directory & Virtual Environment:**
+```bash
+curl -LsSf https://astral.sh/uv/install.sh | sh
+source $HOME/.local/bin/env
+```
+10.  **Create Project Directory & Virtual Environment:**
     ```bash
     mkdir ~/NinjaRobot # Or your preferred project name
     cd ~/NinjaRobot
-    python3 -m venv .venv # Create virtual environment named .venv
+    uv venv # Create virtual environment named .venv
     source .venv/bin/activate # Activate the environment
     ```
     *(Your terminal prompt should now start with `(.venv)`)*
@@ -206,9 +212,9 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
     `smbus2` is a Python module used for I2C communication, often required by HAT libraries like the DFRobot one.
     **This entire step will take a very long time (potentially 1-2+ hours) due to compilation on the Pi Zero.** Be patient.
     ```bash
-    pip install --upgrade pip
-    pip install smbus smbus2 # For I2C communication, important for DFRobot HAT. Try smbus if smbus2 does not work
-    pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
+    uv pip install --upgrade pip
+    uv pip install smbus smbus2 # For I2C communication, important for DFRobot HAT. Try smbus if smbus2 does not work
+    uv pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *   **Note on PyAudio:** If `SpeechRecognition` or `google-cloud-speech` later complains about PyAudio, and the `apt` packages in step 4.6 didn't cover it, you might need to install it explicitly:
         `pip install pyaudio` (ensure system dependencies from step 4.6 are installed first).

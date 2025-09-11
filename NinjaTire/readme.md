@@ -191,18 +191,11 @@ This section involves steps that can take a **very long time** on a Raspberry Pi
         ```bash
         free -h
         ```
-9. Install uv Python Package Manager**
-As recommended by the `piservo0` guidebook, `uv` is a very fast and modern tool for managing Python project dependencies and virtual environments.
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-source $HOME/.local/bin/env
-```
-10. **Create Project Directory & Virtual Environment:**
+9. **Create Project Directory & Virtual Environment:**
     ```bash
     mkdir ~/NinjaRobot # Or your preferred project name
     cd ~/NinjaRobot
-    uv venv # Create virtual environment named .venv
+    python -m venv .venv # Create virtual environment named .venv
     source .venv/bin/activate # Activate the environment
     ```
     *(Your terminal prompt should now start with `(.foldernane)`)*
@@ -212,9 +205,9 @@ source $HOME/.local/bin/env
     `smbus2` is a Python module used for I2C communication, often required by HAT libraries like the DFRobot one.
     **This entire step will take a very long time (potentially 1-2+ hours) due to compilation on the Pi Zero.** Be patient.
     ```bash
-    uv pip install --upgrade pip
-    uv pip install smbus smbus2 # For I2C communication, important for DFRobot HAT. Try smbus if smbus2 does not work
-    uv pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
+    pip install --upgrade pip
+    pip install smbus smbus2 # For I2C communication, important for DFRobot HAT. Try smbus if smbus2 does not work
+    pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *   **Note on PyAudio:** If `SpeechRecognition` or `google-cloud-speech` later complains about PyAudio, and the `apt` packages in step 4.6 didn't cover it, you might need to install it explicitly:
         `pip install pyaudio` (ensure system dependencies from step 4.6 are installed first).
@@ -521,35 +514,28 @@ The web interface provides several ways to control your Ninja robot:
         ```bash
         free -h
         ```
-9：uv Pythonパッケージマネージャーのインストール**
-`piservo0`のガイドブックで推奨されている通り、`uv`はPythonプロジェクトの依存関係や仮想環境を管理するための非常に高速でモダンなツールです。
-
-```bash
-curl -LsSf https://astral.sh/uv/install.sh | sh
-source $HOME/.local/bin/env
-```
-10.  **プロジェクトディレクトリと仮想環境の作成:**
+9. **プロジェクトディレクトリと仮想環境の作成:**
     ```bash
     mkdir ~/NinjaRobot # または好きなプロジェクト名
     cd ~/NinjaRobot
-    uv venv # 仮想環境作成
+    python -m venv .venv # 仮想環境作成
     source .venv/bin/activate # 環境を有効化
     ```
     *(ターミナルプロンプトの先頭に `(.venv)` が表示されます)*
 
-11. **Pythonライブラリのインストール (DFRobot HAT用の `smbus2` を含む):**
+10. **Pythonライブラリのインストール (DFRobot HAT用の `smbus2` を含む):**
     Rust、スワップ、およびシステム依存関係を設定したので、Pythonパッケージをインストールできます。
     `smbus2` はI2C通信に使用されるPythonモジュールで、DFRobotのようなHATライブラリでしばしば必要とされます。
     **このステップ全体はPi Zeroでのコンパイルのため非常に時間がかかります（1～2時間以上かかる可能性があります）。** 辛抱強く待ってください。
     ```bash
-    uv pip install --upgrade pip
-    uv pip install smbus2 # I2C通信用、DFRobot HATに重要. smbus2が使えなければ、smbusを試してください
-    uv pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
+    pip install --upgrade pip
+    pip install smbus2 # I2C通信用、DFRobot HATに重要. smbus2が使えなければ、smbusを試してください
+    pip install RPi.GPIO google-generativeai SpeechRecognition gTTS pygame Flask google-cloud-speech
     ```
     *   **PyAudioに関する注意:** もし後で `SpeechRecognition` や `google-cloud-speech` がPyAudioについてエラーを出す場合で、ステップ4.6の `apt` パッケージでカバーされていなかった場合は、明示的にインストールする必要があるかもしれません：
         `pip install pyaudio` （まずステップ4.6のシステム依存関係がインストールされていることを確認してください）。
 
-12. **スワップ領域の復元 (任意だが推奨):**
+11. **スワップ領域の復元 (任意だが推奨):**
     集中的なコンパイルが完了したら、SDカードの消耗を減らすためにスワップをより小さなデフォルト値に戻すことができます。
     ```bash
     echo "CONF_SWAPSIZE=100" | sudo tee /etc/dphys-swapfile # スワップを100MB (デフォルト) に戻す

@@ -199,13 +199,14 @@ curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
 ```
 10.  **Create Project Directory & Virtual Environment:**
+    
     ```bash
     mkdir ~/NinjaRobot # Or your preferred project name
     cd ~/NinjaRobot
     uv venv # Create virtual environment named .venv
     source .venv/bin/activate # Activate the environment
     ```
-    *(Your terminal prompt should now start with `(.venv)`)*
+    *(Your terminal prompt should now start with `(.foldernane)`)*
 
 10. **Install Python Libraries (including `smbus2` for DFRobot HAT):**
     With Rust, swap, and system dependencies configured, we can now install the Python packages.

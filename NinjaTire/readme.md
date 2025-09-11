@@ -198,7 +198,7 @@ As recommended by the `piservo0` guidebook, `uv` is a very fast and modern tool 
 curl -LsSf https://astral.sh/uv/install.sh | sh
 source $HOME/.local/bin/env
 ```
-10.  **Create Project Directory & Virtual Environment:**
+10. **Create Project Directory & Virtual Environment:**
     ```bash
     mkdir ~/NinjaRobot # Or your preferred project name
     cd ~/NinjaRobot

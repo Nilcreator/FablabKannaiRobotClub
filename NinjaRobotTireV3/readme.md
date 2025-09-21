@@ -88,7 +88,7 @@ sudo systemctl enable pigpiod
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-source $HOME/.cargo/env
+source $HOME/.local/bin/env
 ```
 
 **ステップ4：プロジェクト構造の作成とpiservo0のインストール**
@@ -225,7 +225,7 @@ As recommended by the `piservo0` guidebook, `uv` is a very fast and modern tool 
 
 ```bash
 curl -LsSf https://astral.sh/uv/install.sh | sh
-source $HOME/.cargo/env
+source $HOME/.local/bin/env
 ```
 
 **Step 4: Create Project Structure and Install piservo0**
